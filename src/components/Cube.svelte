@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { InteractiveObject, T } from '@threlte/core';
+  import { InteractiveObject, T, Three } from '@threlte/core';
   import { spring } from 'svelte/motion';
   import { CubeStore } from './stores/CubeStore';
+  import { Color } from 'three';
 
   export let posX: number;
   export let posY: number;
@@ -67,6 +68,9 @@
   </T.Mesh>
   <T.Mesh scale={$scale} castShadow>
     <T.BoxGeometry />
-    <T.MeshStandardMaterial color={tmpColor} />
+    <!-- Dumb way to get around color typing -->
+    <T.MeshStandardMaterial
+      color={new Color(`#${tmpColor.replace('#', '')}`)}
+    />
   </T.Mesh>
 </T.Group>

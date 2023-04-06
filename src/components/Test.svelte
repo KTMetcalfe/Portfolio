@@ -3,10 +3,10 @@
   import { Canvas, OrbitControls, T } from '@threlte/core';
   import { onMount } from 'svelte';
   import { tweened } from 'svelte/motion';
-  import { Mesh } from 'three';
   import { degToRad } from 'three/src/math/MathUtils';
   import Cube from './Cube.svelte';
   import { CubeStore } from './stores/CubeStore';
+  import { runOnInterval } from './stores/IntervalStore';
 
   let size = 10;
 
@@ -87,33 +87,29 @@
     );
   };
 
-  let running = false;
   let rotAmount = 0;
-  const runner = async () => {
-    running = true;
-    while (running) {
-      if (selectedPosition) {
-        const neighbors = getValidNeighbors(
-          Math.floor($selectedPosition.posX),
-          Math.floor($selectedPosition.posY),
-          Math.floor($selectedPosition.posZ)
-        );
-        if (neighbors.length > 0) {
-          const neighbor =
-            neighbors[Math.floor(Math.random() * neighbors.length)];
-          $selectedPosition = {
-            posX: neighbor.x,
-            posY: neighbor.y,
-            posZ: neighbor.z,
-          };
-        }
-      }
-      rotAmount = rotAmount === 360 ? 0 : rotAmount + 0.01;
-      await new Promise((resolve) => setTimeout(resolve, 10));
-    }
-  };
 
-  runner();
+  const { started, start, stop, toggle } = runOnInterval(() => {
+    if (selectedPosition) {
+      const neighbors = getValidNeighbors(
+        Math.floor($selectedPosition.posX),
+        Math.floor($selectedPosition.posY),
+        Math.floor($selectedPosition.posZ)
+      );
+      if (neighbors.length > 0) {
+        const neighbor =
+          neighbors[Math.floor(Math.random() * neighbors.length)];
+        $selectedPosition = {
+          posX: neighbor.x,
+          posY: neighbor.y,
+          posZ: neighbor.z,
+        };
+      }
+    }
+    rotAmount = rotAmount === 360 ? 0 : rotAmount + 0.01;
+  }, 10);
+
+  start();
 </script>
 
 <div>
@@ -134,7 +130,7 @@
       {#each [...$CubeStore] as cube, i (cube.x + ',' + cube.y + ',' + cube.z)}
         <Cube
           color={cube.color}
-          posSelected={running ? $selectedPosition : undefined}
+          posSelected={$started ? $selectedPosition : undefined}
           posX={cube.x}
           posY={cube.y}
           posZ={cube.z}
