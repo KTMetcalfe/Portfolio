@@ -1,0 +1,9 @@
+---
+import NavbarLayout from '../../layouts/NavbarLayout.astro';
+import Galafy from './Galafy.svelte';
+import SignIn from './SignIn.svelte';
+---
+
+<NavbarLayout>
+  <Galafy client:only='svelte' />
+</NavbarLayout>

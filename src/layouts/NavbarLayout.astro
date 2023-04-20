@@ -1,0 +1,44 @@
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <title>Kian's Portfolio</title>
+  </head>
+  <body>
+    <script is:inline>
+      window.addEventListener('scroll', () => {
+        const navbar = document.getElementById('navbar');
+        if (window.scrollY == 0) {
+          navbar.classList.remove('shadow-md');
+        } else {
+          navbar.classList.add('shadow-md');
+        }
+      });
+    </script>
+    <div id='navbar' class='sticky top-0 h-16 bg-base-100'>
+      <div class='navbar w-full'>
+        <div class='navbar-start'>
+          <a class='btn btn-ghost normal-case text-xl' href='/'>Kian Metcalfe</a
+          >
+        </div>
+        <div class='navbar-end'>
+          <ul class="menu menu-horizontal px-1">
+            <li tabindex="0">
+              <a class="btn btn-ghost normal-case text-lg">
+                Projects
+                <svg class="fill-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/></svg>
+              </a>
+              <ul class="p-2 bg-base-100">
+                <a class="btn btn-ghost normal-case text-md" href="/cube">Cube</a>
+                <a class="btn btn-ghost normal-case text-md" href="/galafy">Galafy</a>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div>
+      <slot />
+    </div>
+  </body>
+</html>

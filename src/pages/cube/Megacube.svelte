@@ -4,7 +4,7 @@
   import { onMount } from 'svelte';
   import { tweened } from 'svelte/motion';
   import Cube from './Cube.svelte';
-  import { CubeStore } from './stores/CubeStore';
+  import { CubeStore } from '../../components/stores/CubeStore';
 
   let size = 10;
 
@@ -35,18 +35,12 @@
     }
 
     // Empty the store on unmount
-
     return () => {
       CubeStore.clear();
     };
   });
 
-  const selectedPosition = tweened(
-    { posX: size / 2 - 1, posY: size / 2 - 1, posZ: size / 2 - 1 },
-    {
-      duration: 10,
-    }
-  );
+  let selectedPosition = { posX: size / 2 - 1, posY: size / 2 - 1, posZ: size / 2 - 1 }
 
   const isOnEdge = (posX: number, posY: number, posZ: number) => {
     return (
@@ -91,14 +85,14 @@
     () => {
       if (selectedPosition) {
         const neighbors = getValidNeighbors(
-          Math.floor($selectedPosition.posX),
-          Math.floor($selectedPosition.posY),
-          Math.floor($selectedPosition.posZ)
+          Math.floor(selectedPosition.posX),
+          Math.floor(selectedPosition.posY),
+          Math.floor(selectedPosition.posZ)
         );
         if (neighbors.length > 0) {
           const neighbor =
             neighbors[Math.floor(Math.random() * neighbors.length)];
-          $selectedPosition = {
+          selectedPosition = {
             posX: neighbor.x,
             posY: neighbor.y,
             posZ: neighbor.z,
@@ -117,7 +111,7 @@
   {#each [...$CubeStore] as cube, i (cube.x + ',' + cube.y + ',' + cube.z)}
     <Cube
       color={cube.color}
-      posSelected={$started ? $selectedPosition : undefined}
+      posSelected={$started ? selectedPosition : undefined}
       posX={cube.x}
       posY={cube.y}
       posZ={cube.z}

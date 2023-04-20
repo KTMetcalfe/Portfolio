@@ -3,26 +3,16 @@
   import { degToRad } from 'three/src/math/MathUtils';
   import Megacube from './Megacube.svelte';
   import type { PerspectiveCamera } from 'three';
-  import { onMount } from 'svelte';
 
   let cameraRef: PerspectiveCamera | undefined = undefined;
-
-  onMount(() => {
-    if (cameraRef) {
-      // TODO: Use this to prevent camera from updating
-      console.log('cameraRef', cameraRef)
-      cameraRef.updateMatrix();
-      cameraRef.updateProjectionMatrix();
-    }
-  })
 </script>
 
 <div>
   <Canvas>
-    <T.PerspectiveCamera ref={cameraRef} makeDefault position={[20, 20, 20]} fov={48} matrixAutoUpdate={false}>
+    <T.PerspectiveCamera ref={cameraRef} makeDefault fov={48} position={[20, 20, 20]}>
       <OrbitControls
         maxPolarAngle={degToRad(80)}
-        enableZoom={true}
+        enableZoom={false}
         target={{ y: 0.5 }}
       />
     </T.PerspectiveCamera>

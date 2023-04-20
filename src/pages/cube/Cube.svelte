@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { InteractiveObject, T, Three } from '@threlte/core';
+  import { InteractiveObject, T } from '@threlte/core';
   import { spring } from 'svelte/motion';
-  import { CubeStore } from './stores/CubeStore';
   import { Color } from 'three';
+  import { CubeStore } from '../../components/stores/CubeStore';
 
   export let posX: number;
   export let posY: number;
