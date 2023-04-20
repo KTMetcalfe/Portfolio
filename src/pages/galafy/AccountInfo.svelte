@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { TopArtists, TopTracks, getTokensFromRefresh } from '../../components/helpers/spotify';
+  import { type TopArtists, type TopTracks, getTokensFromRefresh } from '../../components/helpers/spotify';
 
   const getTopOfType = async (top_type: 'artists' | 'tracks') => {
     const response: TopArtists | TopTracks = await fetch(
