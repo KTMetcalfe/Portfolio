@@ -104,3 +104,34 @@ export const SolarSystemStore = derived(
     return solarSystem;
   }
 );
+
+// Derived store for SolarSystems with planets (tracks)
+export const SolarSystemWithPlanetsStore = derived(
+  [SolarSystemStore, TrackStore],
+  ([$SolarSystemStore, $TrackStore]) => {
+    const solarSystemWithPlanets = new Set<{
+      artist: DetailedArtistItem;
+      position: [number, number, number];
+      planets: Set<{
+        track: DetailedTrackItem;
+        position: [number, number, number];
+      }>;
+    }>();
+    $SolarSystemStore.forEach((solarSystem) => {
+      const matchingTracks = [...$TrackStore].filter(
+        (track) => track.artists[0].id === solarSystem.artist.id
+      );
+      solarSystemWithPlanets.add({
+        ...solarSystem,
+        planets: new Set(
+          [...matchingTracks].map((track, index) => ({
+            track,
+            // TODO: Make this a function
+            position: getPositionAroundStar(solarSystem.position, index),
+          }))
+        ),
+      });
+    });
+    return solarSystemWithPlanets;
+  }
+);
