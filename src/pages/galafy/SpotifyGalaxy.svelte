@@ -82,7 +82,7 @@
               return !$ArtistSystemStore.has(relatedArtist.id);
             }
           );
-          relatedArtists.artists.slice(0, 5).forEach((relatedArtist) => {
+          relatedArtists.artists.slice(0, 20).forEach((relatedArtist) => {
             ArtistSystemStore.add(relatedArtist);
           });
         });
@@ -101,7 +101,7 @@
 
 <div class="w-full h-[calc(100vh-4rem)] overflow-hidden">
   <Canvas>
-    <T.PerspectiveCamera makeDefault fov={48} position={[75, 75, 75]}>
+    <T.PerspectiveCamera makeDefault fov={48} position={[0, 500, 0]}>
       <OrbitControls maxPolarAngle={degToRad(80)} />
     </T.PerspectiveCamera>
 
@@ -114,6 +114,7 @@
       <ArtistSystem
         artist={system[1].artist}
         position={[system[1].x, system[1].y, system[1].z]}
+        color={'#666666'}
       />
     {/each}
     <!-- {/await} -->
