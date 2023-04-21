@@ -13,7 +13,8 @@ const authorize = async () => {
   const client_id = import.meta.env.SPOTIFY_CLIENT_ID;
   const redirect_uri = import.meta.env.SPOTIFY_REDIRECT_URI;
   const state = generateRandomString(16);
-  const scope = 'user-top-read';
+  // https://developer.spotify.com/documentation/web-api/concepts/scopes
+  const scope = 'user-read-playback-state user-modify-playback-state user-read-currently-playing streaming user-read-playback-position user-top-read user-read-recently-played';
 
   const query = new URLSearchParams({
     response_type: 'code',

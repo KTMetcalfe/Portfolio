@@ -1,5 +1,5 @@
 <script>
-  import AccountInfo from './AccountInfo.svelte';
+  import SpotifyGalaxy from './SpotifyGalaxy.svelte';
   import SignIn from './SignIn.svelte';
   import {
     getTokensFromCode,
@@ -42,7 +42,7 @@
 
 {#await checkAuth() then isAuth}
   {#if isAuth}
-    <AccountInfo />
+    <SpotifyGalaxy />
   {:else}
     <SignIn />
   {/if}

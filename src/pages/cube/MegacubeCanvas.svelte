@@ -2,14 +2,11 @@
   import { Canvas, OrbitControls, T } from '@threlte/core';
   import { degToRad } from 'three/src/math/MathUtils';
   import Megacube from './Megacube.svelte';
-  import type { PerspectiveCamera } from 'three';
-
-  let cameraRef: PerspectiveCamera | undefined = undefined;
 </script>
 
 <div>
   <Canvas>
-    <T.PerspectiveCamera ref={cameraRef} makeDefault fov={48} position={[20, 20, 20]}>
+    <T.PerspectiveCamera makeDefault fov={48} position={[20, 20, 20]}>
       <OrbitControls
         maxPolarAngle={degToRad(80)}
         enableZoom={false}
