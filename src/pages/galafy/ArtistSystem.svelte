@@ -6,15 +6,23 @@
   export let artist: DetailedArtistItem;
   export let position: [number, number, number];
   export let color: string = '';
-  
+
   export let scale = 1;
   let scaleMultiple = 1;
 
   useFrame(() => {
-      const dist = Math.sqrt(position[0] ** 2 + position[1] ** 2 + position[2] ** 2);
-      const rotChange = -2 / dist;
-    const newX = position[0] * Math.cos(rotChange / dist) - position[2] * Math.sin(rotChange / dist);
-    const newZ = position[0] * Math.sin(rotChange / dist) + position[2] * Math.cos(rotChange / dist);
+    const dist = Math.sqrt(
+      position[0] ** 2 + position[1] ** 2 + position[2] ** 2
+    );
+    const rotChange = -2 / dist;
+
+    const newX =
+      position[0] * Math.cos(rotChange / dist) -
+      position[2] * Math.sin(rotChange / dist);
+    const newZ =
+      position[0] * Math.sin(rotChange / dist) +
+      position[2] * Math.cos(rotChange / dist);
+
     position[0] = newX;
     position[2] = newZ;
   });
@@ -34,6 +42,8 @@
   <T.SphereGeometry args={[1, 32, 32]} />
   {#if color !== ''}
     <T.MeshStandardMaterial color={new Color(`#${color.replace('#', '')}`)} />
+  {:else if artist.images.length === 0}
+    <T.MeshStandardMaterial color={new Color('#000000')} />
   {:else}
     <T.MeshStandardMaterial map={useTexture(artist.images[0].url)} />
   {/if}

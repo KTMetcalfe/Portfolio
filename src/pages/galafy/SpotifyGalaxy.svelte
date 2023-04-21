@@ -114,7 +114,6 @@
       <ArtistSystem
         artist={system[1].artist}
         position={[system[1].x, system[1].y, system[1].z]}
-        color={'#666666'}
       />
     {/each}
     <!-- {/await} -->
