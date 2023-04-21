@@ -29,23 +29,27 @@
   });
 </script>
 
-<T.Mesh {position} scale={scale * scaleMultiple} let:ref>
-  <InteractiveObject
-    object={ref}
-    interactive
-    on:pointerenter={() => {
-      scaleMultiple = 1.5;
-    }}
-    on:pointerleave={() => {
-      scaleMultiple = 1;
-    }}
-  />
-  <T.SphereGeometry args={[1, 32, 32]} />
-  {#if color !== ''}
-    <T.MeshStandardMaterial color={new Color(`#${color.replace('#', '')}`)} />
-  {:else if artist.images.length === 0}
-    <T.MeshStandardMaterial color={new Color('#000000')} />
-  {:else}
-    <T.MeshStandardMaterial map={useTexture(artist.images[0].url)} />
-  {/if}
-</T.Mesh>
+<T.Group>
+  <!-- Artist as sun -->
+  <T.Mesh {position} scale={scale * scaleMultiple} let:ref>
+    <InteractiveObject
+      object={ref}
+      interactive
+      on:pointerenter={() => {
+        scaleMultiple = 1.5;
+      }}
+      on:pointerleave={() => {
+        scaleMultiple = 1;
+      }}
+    />
+    <T.SphereGeometry args={[1, 32, 32]} />
+    {#if color !== ''}
+      <T.MeshStandardMaterial color={new Color(`#${color.replace('#', '')}`)} />
+    {:else if artist.images.length === 0}
+      <T.MeshStandardMaterial color={new Color('#666666')} />
+    {:else}
+      <T.MeshStandardMaterial map={useTexture(artist.images[0].url)} />
+    {/if}
+  </T.Mesh>
+  <!-- Surrounding song planets -->
+</T.Group>

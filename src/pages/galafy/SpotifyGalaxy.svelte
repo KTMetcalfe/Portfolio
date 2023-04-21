@@ -9,7 +9,11 @@
   import { degToRad } from 'three/src/math/MathUtils';
   import ArtistSystem from './ArtistSystem.svelte';
   import { onMount } from 'svelte';
-  import { ArtistSystemStore } from '../../components/stores/GalaxyStore';
+  import {
+    ArtistStore,
+    SolarSystemStore,
+    TrackStore,
+  } from '../../components/stores/GalaxyStore';
 
   const getTopOfType = async (top_type: 'artists' | 'tracks') => {
     const response: TopArtists | TopTracks = await fetch(
@@ -73,19 +77,26 @@
 
   const createArtistSystems = () => {
     getTopArtists().then((topArtists) => {
-      topArtists.items.map(async (artist) => {
-        ArtistSystemStore.add(artist);
+      topArtists.items.forEach((artist) => {
+        ArtistStore.add(artist);
 
         getRelatedArtists(artist.id).then((relatedArtists) => {
           relatedArtists.artists = relatedArtists.artists.filter(
-            (relatedArtist) => {
-              return !$ArtistSystemStore.has(relatedArtist.id);
-            }
+            (relatedArtist) => !ArtistStore.contains(relatedArtist.id)
           );
           relatedArtists.artists.slice(0, 20).forEach((relatedArtist) => {
-            ArtistSystemStore.add(relatedArtist);
+            ArtistStore.add(relatedArtist);
           });
         });
+      });
+    });
+
+    getTopTracks().then((topTracks) => {
+      topTracks.items.forEach((track) => {
+        const artist = track.artists[0];
+        if (ArtistStore.contains(artist.id)) {
+          TrackStore.add(track);
+        }
       });
     });
   };
@@ -94,14 +105,14 @@
     createArtistSystems();
 
     return () => {
-      ArtistSystemStore.clear();
+      ArtistStore.clear();
     };
   });
 </script>
 
 <div class="w-full h-[calc(100vh-4rem)] overflow-hidden bg-black">
   <Canvas>
-    <T.PerspectiveCamera makeDefault fov={48} position={[0, 1000, 0]}>
+    <T.PerspectiveCamera makeDefault fov={72} position={[750, 750, 0]}>
       <OrbitControls maxPolarAngle={degToRad(80)} />
     </T.PerspectiveCamera>
 
@@ -109,10 +120,13 @@
     <T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
     <T.AmbientLight intensity={0.2} />
 
-    {#each [...$ArtistSystemStore] as system, i (system[0])}
+    {#each [...$SolarSystemStore] as system, i (system.artist.id)}
       <ArtistSystem
-        artist={system[1].artist}
-        position={[system[1].x, system[1].y, system[1].z]}
+        artist={system.artist}
+        position={system.position}
+        color={`#${Math.floor(Math.random() * 0xffffff)
+          .toString(16)
+          .padStart(6, '0')}`}
       />
     {/each}
   </Canvas>

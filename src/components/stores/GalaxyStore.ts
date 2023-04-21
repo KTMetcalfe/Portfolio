@@ -1,5 +1,5 @@
-import { writable } from 'svelte/store';
-import type { DetailedArtistItem } from '../helpers/spotify';
+import { derived, writable } from 'svelte/store';
+import type { DetailedArtistItem, DetailedTrackItem } from '../helpers/spotify';
 
 const galaxyArms = 4;
 const galaxyScale = 1000;
@@ -22,34 +22,85 @@ const getRandomPosition = (index: number) => {
     radialDistWithNoise *
     Math.sin(randomTheta + armIndex * ((2 * Math.PI) / galaxyArms));
 
-  return { x: randX, y: randY, z: randZ };
+  return [randX, randY, randZ] as [number, number, number];
 };
 
-const createArtistSystemStore = () => {
-  const { subscribe, set, update } = writable<
-    Map<string, { x: number; y: number; z: number; artist: DetailedArtistItem }>
-  >(new Map());
+const createArtistStore = () => {
+  const { subscribe, set, update } = writable<Set<DetailedArtistItem>>(
+    new Set()
+  );
 
   return {
     subscribe,
-    add: (artist: DetailedArtistItem, x?: number, y?: number, z?: number) =>
+    add: (artist: DetailedArtistItem) =>
       update((state) => {
-        const { x: randX, y: randY, z: randZ } = getRandomPosition(state.size);
-        state.set(artist.id, {
-          x: x || randX,
-          y: y || randY,
-          z: z || randZ,
-          artist,
-        });
+        state.add(artist);
         return state;
       }),
     remove: (artist_id: string) =>
       update((state) => {
-        state.delete(artist_id);
+        state = new Set([...state].filter((artist) => artist.id !== artist_id));
         return state;
       }),
-    clear: () => set(new Map()),
+    contains: (artist_id: string) => {
+      let found = null;
+      update((state) => {
+        found = [...state].find((artist) => artist.id === artist_id);
+        return state;
+      });
+      return found !== undefined && found !== null;
+    },
+    clear: () => set(new Set()),
   };
 };
 
-export const ArtistSystemStore = createArtistSystemStore();
+export const ArtistStore = createArtistStore();
+
+const createTrackStore = () => {
+  const { subscribe, set, update } = writable<Set<DetailedTrackItem>>(
+    new Set()
+  );
+
+  return {
+    subscribe,
+    add: (track: DetailedTrackItem) =>
+      update((state) => {
+        state.add(track);
+        return state;
+      }),
+    remove: (track_id: string) =>
+      update((state) => {
+        state = new Set([...state].filter((track) => track.id !== track_id));
+        return state;
+      }),
+    contains: (track_id: string) => {
+      let found = null;
+      update((state) => {
+        found = [...state].find((track) => track.id === track_id);
+        return state;
+      });
+      return found !== null;
+    },
+    clear: () => set(new Set()),
+  };
+};
+
+export const TrackStore = createTrackStore();
+
+// Derived store for solar systems
+export const SolarSystemStore = derived(
+  [ArtistStore, TrackStore],
+  ([$ArtistStore, $TrackStore]) => {
+    const solarSystem = new Set<{
+      artist: DetailedArtistItem;
+      position: [number, number, number];
+    }>();
+    [...$ArtistStore].forEach((artist, index) => {
+      solarSystem.add({
+        artist,
+        position: getRandomPosition(index),
+      });
+    });
+    return solarSystem;
+  }
+);
