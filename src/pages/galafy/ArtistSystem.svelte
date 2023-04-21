@@ -14,7 +14,8 @@
     const dist = Math.sqrt(
       position[0] ** 2 + position[1] ** 2 + position[2] ** 2
     );
-    const rotChange = -2 / dist;
+    const rotChange = -0.25;
+    // const rotChange = -5 / dist;
 
     const newX =
       position[0] * Math.cos(rotChange / dist) -

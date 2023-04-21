@@ -5,7 +5,7 @@
     TopTracks,
   } from '../../components/helpers/spotify';
   import { getTokensFromRefresh } from '../../components/helpers/spotify';
-  import { Canvas, T, OrbitControls, Fog } from '@threlte/core';
+  import { Canvas, T, OrbitControls } from '@threlte/core';
   import { degToRad } from 'three/src/math/MathUtils';
   import ArtistSystem from './ArtistSystem.svelte';
   import { onMount } from 'svelte';
@@ -99,7 +99,7 @@
   });
 </script>
 
-<div class="w-full h-[calc(100vh-4rem)] overflow-hidden">
+<div class="w-full h-[calc(100vh-4rem)] overflow-hidden bg-black">
   <Canvas>
     <T.PerspectiveCamera makeDefault fov={48} position={[0, 1000, 0]}>
       <OrbitControls maxPolarAngle={degToRad(80)} />
@@ -109,15 +109,12 @@
     <T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
     <T.AmbientLight intensity={0.2} />
 
-    <!-- {#await createArtistSystems()} -->
     {#each [...$ArtistSystemStore] as system, i (system[0])}
       <ArtistSystem
         artist={system[1].artist}
         position={[system[1].x, system[1].y, system[1].z]}
       />
     {/each}
-    <!-- {/await} -->
-    <!-- <Fog color={'red'} near={0} far={500} /> -->
   </Canvas>
 </div>
 <br />
