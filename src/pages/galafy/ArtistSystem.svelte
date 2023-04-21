@@ -11,10 +11,12 @@
   let scaleMultiple = 1;
 
   useFrame(() => {
-    const rotChange = -0.05;
-    const dist = Math.sqrt(position[0] ** 2 + position[1] ** 2 + position[2] ** 2);
-    position[0] = position[0] * Math.cos(rotChange / dist) - position[2] * Math.sin(rotChange / dist);
-    position[2] = position[0] * Math.sin(rotChange / dist) + position[2] * Math.cos(rotChange / dist);
+      const dist = Math.sqrt(position[0] ** 2 + position[1] ** 2 + position[2] ** 2);
+      const rotChange = -2 / dist;
+    const newX = position[0] * Math.cos(rotChange / dist) - position[2] * Math.sin(rotChange / dist);
+    const newZ = position[0] * Math.sin(rotChange / dist) + position[2] * Math.cos(rotChange / dist);
+    position[0] = newX;
+    position[2] = newZ;
   });
 </script>
 

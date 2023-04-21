@@ -101,7 +101,7 @@
 
 <div class="w-full h-[calc(100vh-4rem)] overflow-hidden">
   <Canvas>
-    <T.PerspectiveCamera makeDefault fov={48} position={[0, 500, 0]}>
+    <T.PerspectiveCamera makeDefault fov={48} position={[0, 1000, 0]}>
       <OrbitControls maxPolarAngle={degToRad(80)} />
     </T.PerspectiveCamera>
 
