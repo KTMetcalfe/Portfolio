@@ -1,6 +1,7 @@
 <script lang="ts">
   import type {
     DetailedArtistItem,
+    DetailedTrackItem,
     TopArtists,
     TopTracks,
   } from '../../components/helpers/spotify';
@@ -9,11 +10,7 @@
   import { degToRad } from 'three/src/math/MathUtils';
   import ArtistSystem from './ArtistSystem.svelte';
   import { onMount } from 'svelte';
-  import {
-    ArtistStore,
-    SolarSystemStore,
-    TrackStore,
-  } from '../../components/stores/GalaxyStore';
+  import { GalaxyStore } from '../../components/stores/GalaxyStore';
 
   const getTopOfType = async (top_type: 'artists' | 'tracks') => {
     const response: TopArtists | TopTracks = await fetch(
@@ -24,20 +21,15 @@
             'Bearer ' + localStorage.getItem('spotify_access_token'),
         },
       }
-    )
-      .then((res) => res.json())
-      .then(async (data) => {
-        // TODO: Make sure we get new tokens if a access_token doesnt work, and if we dont get new tokens, redirect to login page
-        // TODO: DO THIS FOR ALL API CALLS
-        if (data.error) {
-          const isAuth = await getTokensFromRefresh();
-          if (!isAuth) {
-            window.location.href = '/galafy';
-          }
-        } else {
-          return data;
+    ).then(async (res) => {
+      if (res.status === 401) {
+        const isAuth = await getTokensFromRefresh();
+        if (!isAuth) {
+          window.location.href = '/galafy';
         }
-      });
+      }
+      return res.json();
+    });
 
     return response;
   };
@@ -59,33 +51,61 @@
             'Bearer ' + localStorage.getItem('spotify_access_token'),
         },
       }
-    )
-      .then((res) => res.json())
-      .then(async (data) => {
-        if (data.error) {
-          const isAuth = await getTokensFromRefresh();
-          if (!isAuth) {
-            window.location.href = '/galafy';
-          }
-        } else {
-          return data;
+    ).then(async (res) => {
+      if (res.status === 401) {
+        const isAuth = await getTokensFromRefresh();
+        if (!isAuth) {
+          window.location.href = '/galafy';
         }
-      });
+      }
+      return res.json();
+    });
+
+    return response;
+  };
+
+  const getArtistTracks = async (artist_id: string) => {
+    const response: { tracks: Array<DetailedTrackItem> } = await fetch(
+      `https://api.spotify.com/v1/artists/${artist_id}/top-tracks?country=US`,
+      {
+        headers: {
+          Authorization:
+            'Bearer ' + localStorage.getItem('spotify_access_token'),
+        },
+      }
+    ).then(async (res) => {
+      if (res.status === 401) {
+        const isAuth = await getTokensFromRefresh();
+        if (!isAuth) {
+          window.location.href = '/galafy';
+        }
+      }
+      return res.json();
+    });
 
     return response;
   };
 
   const createArtistSystems = () => {
     getTopArtists().then((topArtists) => {
-      topArtists.items.forEach((artist) => {
-        ArtistStore.add(artist);
+      topArtists.items.map(async (artist) => {
+        GalaxyStore.addSystem(artist);
+        // await new Promise((r) => setTimeout(r, 200));
+        // await getArtistTracks(artist.id).then((tracks) => {
+        //   GalaxyStore.addSystem(artist, tracks.tracks);
+        // });
 
         getRelatedArtists(artist.id).then((relatedArtists) => {
           relatedArtists.artists = relatedArtists.artists.filter(
-            (relatedArtist) => !ArtistStore.contains(relatedArtist.id)
+            (relatedArtist) => !GalaxyStore.containsSystem(relatedArtist.id)
           );
-          relatedArtists.artists.slice(0, 20).forEach((relatedArtist) => {
-            ArtistStore.add(relatedArtist);
+          // Change amount of related artists to add here
+          relatedArtists.artists.slice(0, 20).map(async (relatedArtist) => {
+            GalaxyStore.addSystem(relatedArtist);
+            // await new Promise((r) => setTimeout(r, 250));
+            // await getArtistTracks(relatedArtist.id).then((tracks) => {
+            //   GalaxyStore.addSystem(relatedArtist, tracks.tracks);
+            // });
           });
         });
       });
@@ -94,8 +114,8 @@
     getTopTracks().then((topTracks) => {
       topTracks.items.forEach((track) => {
         const artist = track.artists[0];
-        if (ArtistStore.contains(artist.id)) {
-          TrackStore.add(track);
+        if (GalaxyStore.containsSystem(artist.id)) {
+          GalaxyStore.addPlanet(track);
         }
       });
     });
@@ -104,8 +124,12 @@
   onMount(() => {
     createArtistSystems();
 
+    setTimeout(() => {
+      console.log($GalaxyStore);
+    }, 10000);
+
     return () => {
-      ArtistStore.clear();
+      GalaxyStore.clear();
     };
   });
 </script>
@@ -120,13 +144,23 @@
     <T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
     <T.AmbientLight intensity={0.2} />
 
-    {#each [...$SolarSystemStore] as system, i (system.artist.id)}
+    <!-- {#each [...$SolarSystemStore] as system, i (system.artist.id)}
       <ArtistSystem
         artist={system.artist}
         position={system.position}
         color={`#${Math.floor(Math.random() * 0xffffff)
           .toString(16)
           .padStart(6, '0')}`}
+      />
+    {/each} -->
+    {#each [...$GalaxyStore.systems] as system, i (system[0])}
+      <ArtistSystem
+        artist={system[1].artist}
+        position={system[1].position}
+        color={`#${Math.floor(Math.random() * 0xffffff)
+          .toString(16)
+          .padStart(6, '0')}`}
+        planets={system[1].planets}
       />
     {/each}
   </Canvas>
