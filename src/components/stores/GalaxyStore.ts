@@ -7,33 +7,10 @@ const galaxyTightness = 0.075;
 const radialNoise = 100;
 const centerOffset = 925;
 
+const minHeightDif = 15;
+const minDist = 25;
+
 const planetLimit = 5;
-
-const getRandomPosition = (index: number) => {
-  const armIndex = index % galaxyArms;
-  const randomTheta = Math.random() * 2 * Math.PI;
-  const radialDist =
-    galaxyScale * Math.exp(galaxyTightness * randomTheta) - centerOffset;
-  const radialDistWithNoise = radialDist + Math.random() * radialNoise;
-
-  const randX =
-    radialDistWithNoise *
-    Math.cos(randomTheta + armIndex * ((2 * Math.PI) / galaxyArms));
-  const randY = Math.random() * 50 - 25;
-  const randZ =
-    radialDistWithNoise *
-    Math.sin(randomTheta + armIndex * ((2 * Math.PI) / galaxyArms));
-
-  return [randX, randY, randZ] as [number, number, number];
-};
-
-const getPositionAroundStar = (index: number, radius: number) => {
-  const angle = (index / planetLimit) * 2 * Math.PI;
-  const x = radius * Math.cos(angle);
-  const y = 0;
-  const z = radius * Math.sin(angle);
-  return [x, y, z] as [number, number, number];
-};
 
 type PositionType = [number, number, number];
 type PlanetMapType = Map<
@@ -55,6 +32,62 @@ type GalaxyStoreType = {
   systems: SystemMapType;
 };
 
+const getRandomPosition = (
+  index: number,
+  existingPositions: PositionType[]
+) => {
+  let attempt = 0;
+  let maxAttempts = 1000;
+
+  while (attempt < maxAttempts) {
+    const armIndex = index % galaxyArms;
+    const randomTheta = Math.random() * 2 * Math.PI;
+    const radialDist =
+      galaxyScale * Math.exp(galaxyTightness * randomTheta) - centerOffset;
+    const radialDistWithNoise = radialDist + Math.random() * radialNoise;
+
+    const randX =
+      radialDistWithNoise *
+      Math.cos(randomTheta + armIndex * ((2 * Math.PI) / galaxyArms));
+    const randY = Math.random() * 50 - 25;
+    const randZ =
+      radialDistWithNoise *
+      Math.sin(randomTheta + armIndex * ((2 * Math.PI) / galaxyArms));
+
+    const newPosition = [randX, randY, randZ] as PositionType;
+
+    let valid = true;
+
+    for (const existingPosition of existingPositions) {
+      const dx = Math.abs(newPosition[0] - existingPosition[0]);
+      const dy = Math.abs(newPosition[1] - existingPosition[1]);
+      const dz = Math.abs(newPosition[2] - existingPosition[2]);
+
+      if (dx < minDist && dz < minDist && dy < minHeightDif) {
+        valid = false;
+        break;
+      }
+    }
+
+    if (valid) {
+      return newPosition;
+    }
+
+    attempt++;
+  }
+
+  console.warn('Could not find a valid position for planet');
+  return [0, 0, 0] as PositionType;
+};
+
+const getPositionAroundStar = (index: number, radius: number) => {
+  const angle = (index / planetLimit) * 2 * Math.PI;
+  const x = radius * Math.cos(angle);
+  const y = 0;
+  const z = radius * Math.sin(angle);
+  return [x, y, z] as PositionType;
+};
+
 // Artists are systems
 // Tracks are planets
 const defaultGalaxyStore: GalaxyStoreType = {
@@ -74,7 +107,12 @@ const createGalaxyStore = () => {
       update((state) => {
         const newSystem = {
           artist,
-          position: position ?? getRandomPosition(state.systems.size),
+          position:
+            position ??
+            getRandomPosition(
+              state.systems.size,
+              [...state.systems].map(([_, system]) => system.position)
+            ),
           planets: tracks
             ? new Map(
                 tracks.map((track) => [
