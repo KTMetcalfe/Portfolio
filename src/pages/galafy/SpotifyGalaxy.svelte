@@ -11,6 +11,8 @@
   import ArtistSystem from './ArtistSystem.svelte';
   import { onMount } from 'svelte';
   import { GalaxyStore } from '../../components/stores/GalaxyStore';
+  import type { PerspectiveCamera } from 'three';
+  import { tweened } from 'svelte/motion';
 
   const getTopOfType = async (top_type: 'artists' | 'tracks') => {
     const response: TopArtists | TopTracks = await fetch(
@@ -130,14 +132,37 @@
 
     return () => {
       GalaxyStore.clear();
+      console.log('cleared');
     };
   });
+
+  let cameraRef: PerspectiveCamera;
+  const cameraPosition = tweened([750, 750, 0], { duration: 750 });
+  const cameraTarget = tweened([0, 0, 0], { duration: 500 });
 </script>
 
-<div class="w-full h-[calc(100vh-4rem)] overflow-hidden bg-black">
+<div
+  class="w-full h-[calc(100vh-4rem)] overflow-hidden bg-black"
+  on:contextmenu|preventDefault={() => {
+    cameraPosition.set([750, 750, 0]).then(() => {
+      $cameraTarget = [0, 0, 0];
+    });
+  }}
+>
   <Canvas>
-    <T.PerspectiveCamera makeDefault fov={72} position={[750, 750, 0]}>
-      <OrbitControls maxPolarAngle={degToRad(80)} />
+    <T.PerspectiveCamera
+      makeDefault
+      fov={72}
+      position={[$cameraPosition[0], $cameraPosition[1], $cameraPosition[2]]}
+      bind:ref={cameraRef}
+    >
+      <OrbitControls
+        target={{
+          x: $cameraTarget[0],
+          y: $cameraTarget[1],
+          z: $cameraTarget[2],
+        }}
+      />
     </T.PerspectiveCamera>
 
     <T.DirectionalLight castShadow position={[3, 10, 10]} />
@@ -161,6 +186,57 @@
           .toString(16)
           .padStart(6, '0')}`}
         planets={system[1].planets}
+        clickCallback={async () => {
+          console.log('click');
+          cameraTarget
+            .set([
+              system[1].position[0],
+              system[1].position[1],
+              system[1].position[2],
+            ])
+            .then(() => {
+              // Assuming you have the current camera position as an array [x, y, z]
+              const currentCameraPosition = [
+                $cameraPosition[0],
+                $cameraPosition[1],
+                $cameraPosition[2],
+              ];
+
+              // Calculate the direction vector
+              const directionVector = [
+                currentCameraPosition[0] - system[1].position[0],
+                currentCameraPosition[1] - system[1].position[1],
+                currentCameraPosition[2] - system[1].position[2],
+              ];
+
+              // Normalize the direction vector
+              const vectorLength = Math.sqrt(
+                directionVector[0] ** 2 +
+                  directionVector[1] ** 2 +
+                  directionVector[2] ** 2
+              );
+
+              const normalizedDirectionVector = [
+                directionVector[0] / vectorLength,
+                directionVector[1] / vectorLength,
+                directionVector[2] / vectorLength,
+              ];
+
+              // Scale the normalized direction vector by 10 units
+              const scaledDirectionVector = [
+                normalizedDirectionVector[0] * -10,
+                normalizedDirectionVector[1] * -10,
+                normalizedDirectionVector[2] * -10,
+              ];
+
+              // Subtract the scaled direction vector from the new position
+              $cameraPosition = [
+                system[1].position[0] - scaledDirectionVector[0],
+                system[1].position[1] - scaledDirectionVector[1],
+                system[1].position[2] - scaledDirectionVector[2],
+              ];
+            });
+        }}
       />
     {/each}
   </Canvas>

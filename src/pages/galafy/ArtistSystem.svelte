@@ -5,6 +5,7 @@
     DetailedTrackItem,
   } from '../../components/helpers/spotify';
   import { Color } from 'three';
+  import { tweened } from 'svelte/motion';
 
   export let artist: DetailedArtistItem;
   export let position: [number, number, number];
@@ -16,9 +17,10 @@
       position: [number, number, number];
     }
   >();
+  export let clickCallback: () => void = () => {};
 
   export let scale = 1;
-  let scaleMultiple = 1;
+  let scaleMultiple = tweened(1, { duration: 100 });
 
   export const { start, stop, started } = useFrame(
     () => {
@@ -46,16 +48,17 @@
 
 <T.Group {position}>
   <!-- Artist as sun -->
-  <T.Mesh scale={scale * scaleMultiple} let:ref>
+  <T.Mesh scale={scale * $scaleMultiple} let:ref>
     <InteractiveObject
       object={ref}
       interactive
       on:pointerenter={() => {
-        scaleMultiple = 1.5;
+        $scaleMultiple = 1.5;
       }}
       on:pointerleave={() => {
-        scaleMultiple = 1;
+        $scaleMultiple = 1;
       }}
+      on:click={clickCallback}
     />
     <T.SphereGeometry args={[1, 32, 32]} />
     {#if color !== ''}
