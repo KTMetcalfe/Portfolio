@@ -6,13 +6,15 @@
     TopTracks,
   } from '../../components/helpers/spotify';
   import { getTokensFromRefresh } from '../../components/helpers/spotify';
-  import { Canvas, T, OrbitControls } from '@threlte/core';
-  import { degToRad } from 'three/src/math/MathUtils';
+  import { Canvas, OrbitControls, T } from '@threlte/core';
   import ArtistSystem from './ArtistSystem.svelte';
   import { onMount } from 'svelte';
   import { GalaxyStore } from '../../components/stores/GalaxyStore';
-  import type { PerspectiveCamera } from 'three';
-  import { tweened } from 'svelte/motion';
+  import { PerspectiveCamera, Vector3 } from 'three';
+  import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls';
+
+  let cameraRef: PerspectiveCamera;
+  let controlsRef: OrbitControlsType;
 
   const getTopOfType = async (top_type: 'artists' | 'tracks') => {
     const response: TopArtists | TopTracks = await fetch(
@@ -92,10 +94,6 @@
     getTopArtists().then((topArtists) => {
       topArtists.items.map(async (artist) => {
         GalaxyStore.addSystem(artist);
-        // await new Promise((r) => setTimeout(r, 200));
-        // await getArtistTracks(artist.id).then((tracks) => {
-        //   GalaxyStore.addSystem(artist, tracks.tracks);
-        // });
 
         getRelatedArtists(artist.id).then((relatedArtists) => {
           relatedArtists.artists = relatedArtists.artists.filter(
@@ -104,10 +102,6 @@
           // Change amount of related artists to add here
           relatedArtists.artists.slice(0, 20).map(async (relatedArtist) => {
             GalaxyStore.addSystem(relatedArtist);
-            // await new Promise((r) => setTimeout(r, 250));
-            // await getArtistTracks(relatedArtist.id).then((tracks) => {
-            //   GalaxyStore.addSystem(relatedArtist, tracks.tracks);
-            // });
           });
         });
       });
@@ -123,44 +117,102 @@
     });
   };
 
+  const getCameraOrbitPosition = (cameraPos: Vector3, systemPos: Vector3) => {
+    // Calculate the direction vector
+    const directionVector = cameraPos
+      .clone()
+      .sub(systemPos)
+      .normalize()
+      .multiplyScalar(10);
+
+    // Calculate the new position
+    const newCameraPosition = systemPos.clone().add(directionVector);
+    return newCameraPosition;
+  };
+
+  const customLerp = (
+    start: Vector3,
+    end: Vector3,
+    time: number,
+    onUpdate: (current: Vector3) => void
+  ) =>
+    new Promise<void>((res) => {
+      const lerpSteps = Math.floor((time / 1000) * 100);
+      const lerpVector = end.clone().sub(start).divideScalar(lerpSteps);
+
+      const currentLerp = start.clone();
+
+      let counter = 1;
+      const interval = setInterval(() => {
+        currentLerp.add(lerpVector);
+
+        onUpdate(currentLerp);
+
+        if (counter >= lerpSteps) {
+          clearInterval(interval);
+          res();
+        }
+        counter++;
+      }, time / lerpSteps);
+    });
+
+  const changeCameraFocus = (
+    target: Vector3,
+    position: Vector3,
+    invertAnimation?: boolean
+  ) => {
+    // Lerp from current camera target to new camera target
+    if (invertAnimation) {
+      customLerp(cameraRef.position, position, 500, (current) => {
+        cameraRef.position.copy(current);
+        controlsRef.update();
+      }).then(() => {
+        // Lerp from current camera position to new camera position
+        customLerp(controlsRef.target, target, 250, (current) => {
+          controlsRef.target.set(current.x, current.y, current.z);
+          controlsRef.update();
+        });
+      });
+    } else {
+      customLerp(controlsRef.target, target, 250, (current) => {
+        controlsRef.target.set(current.x, current.y, current.z);
+        controlsRef.update();
+      }).then(() => {
+        // Lerp from current camera position to new camera position
+        customLerp(cameraRef.position, position, 500, (current) => {
+          cameraRef.position.copy(current);
+          controlsRef.update();
+        });
+      });
+    }
+  };
+
   onMount(() => {
     createArtistSystems();
-
-    setTimeout(() => {
-      console.log($GalaxyStore);
-    }, 10000);
-
     return () => {
       GalaxyStore.clear();
-      console.log('cleared');
     };
   });
-
-  let cameraRef: PerspectiveCamera;
-  const cameraPosition = tweened([750, 750, 0], { duration: 750 });
-  const cameraTarget = tweened([0, 0, 0], { duration: 500 });
 </script>
 
 <div
   class="w-full h-[calc(100vh-4rem)] overflow-hidden bg-black"
-  on:contextmenu|preventDefault={() => {
-    cameraPosition.set([750, 750, 0]).then(() => {
-      $cameraTarget = [0, 0, 0];
-    });
-  }}
+  on:contextmenu|preventDefault={() =>
+    changeCameraFocus(new Vector3(0, 0, 0), new Vector3(750, 750, 0), true)}
 >
   <Canvas>
     <T.PerspectiveCamera
+      bind:ref={cameraRef}
       makeDefault
       fov={72}
-      position={[$cameraPosition[0], $cameraPosition[1], $cameraPosition[2]]}
-      bind:ref={cameraRef}
+      position={[750, 750, 0]}
     >
       <OrbitControls
+        bind:controls={controlsRef}
         target={{
-          x: $cameraTarget[0],
-          y: $cameraTarget[1],
-          z: $cameraTarget[2],
+          x: 0,
+          y: 0,
+          z: 0,
         }}
       />
     </T.PerspectiveCamera>
@@ -169,15 +221,6 @@
     <T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
     <T.AmbientLight intensity={0.2} />
 
-    <!-- {#each [...$SolarSystemStore] as system, i (system.artist.id)}
-      <ArtistSystem
-        artist={system.artist}
-        position={system.position}
-        color={`#${Math.floor(Math.random() * 0xffffff)
-          .toString(16)
-          .padStart(6, '0')}`}
-      />
-    {/each} -->
     {#each [...$GalaxyStore.systems] as system, i (system[0])}
       <ArtistSystem
         artist={system[1].artist}
@@ -186,94 +229,18 @@
           .toString(16)
           .padStart(6, '0')}`}
         planets={system[1].planets}
-        clickCallback={async () => {
-          console.log('click');
-          cameraTarget
-            .set([
-              system[1].position[0],
-              system[1].position[1],
-              system[1].position[2],
-            ])
-            .then(() => {
-              // Assuming you have the current camera position as an array [x, y, z]
-              const currentCameraPosition = [
-                $cameraPosition[0],
-                $cameraPosition[1],
-                $cameraPosition[2],
-              ];
-
-              // Calculate the direction vector
-              const directionVector = [
-                currentCameraPosition[0] - system[1].position[0],
-                currentCameraPosition[1] - system[1].position[1],
-                currentCameraPosition[2] - system[1].position[2],
-              ];
-
-              // Normalize the direction vector
-              const vectorLength = Math.sqrt(
-                directionVector[0] ** 2 +
-                  directionVector[1] ** 2 +
-                  directionVector[2] ** 2
-              );
-
-              const normalizedDirectionVector = [
-                directionVector[0] / vectorLength,
-                directionVector[1] / vectorLength,
-                directionVector[2] / vectorLength,
-              ];
-
-              // Scale the normalized direction vector by 10 units
-              const scaledDirectionVector = [
-                normalizedDirectionVector[0] * -10,
-                normalizedDirectionVector[1] * -10,
-                normalizedDirectionVector[2] * -10,
-              ];
-
-              // Subtract the scaled direction vector from the new position
-              $cameraPosition = [
-                system[1].position[0] - scaledDirectionVector[0],
-                system[1].position[1] - scaledDirectionVector[1],
-                system[1].position[2] - scaledDirectionVector[2],
-              ];
-            });
+        clickCallback={() => {
+          const systemPosition = new Vector3(
+            system[1].position[0],
+            system[1].position[1],
+            system[1].position[2]
+          );
+          changeCameraFocus(
+            systemPosition,
+            getCameraOrbitPosition(cameraRef.position, systemPosition)
+          );
         }}
       />
     {/each}
   </Canvas>
 </div>
-<br />
-{#await getTopArtists() then topArtists}
-  <div
-    class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-10"
-  >
-    {#each topArtists.items as artist}
-      <div class="flex gap-2">
-        <img
-          class="self-start"
-          src={artist.images[0].url}
-          alt={artist.name}
-          width="100"
-          height="100"
-        />
-        <p>{artist.name}</p>
-      </div>
-    {/each}
-  </div>
-{/await}
-<br />
-{#await getTopTracks() then topTracks}
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
-    {#each topTracks.items as track}
-      <div class="flex gap-2">
-        <img
-          class="self-start"
-          src={track.album.images[0].url}
-          alt={track.album.name}
-          width="100"
-          height="100"
-        />
-        <p>{track.name} - {track.album.name}</p>
-      </div>
-    {/each}
-  </div>
-{/await}
