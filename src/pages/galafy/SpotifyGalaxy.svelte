@@ -87,7 +87,35 @@
     return response;
   };
 
-  const createArtistSystems = () => {
+  const getAvailableGenres = async () => {
+    const response: { genres: Array<string> } = await fetch(
+      'https://api.spotify.com/v1/recommendations/available-genre-seeds',
+      {
+        headers: {
+          Authorization:
+            'Bearer ' + localStorage.getItem('spotify_access_token'),
+        },
+      }
+    ).then(async (res) => {
+      if (res.status === 401) {
+        const isAuth = await getTokensFromRefresh();
+        if (!isAuth) {
+          window.location.href = '/galafy';
+        }
+      }
+      return res.json();
+    });
+
+    return response;
+  };
+
+  const createArtistSystems = async () => {
+    await getAvailableGenres().then((genres) => {
+      genres.genres.map((g) => {
+        GalaxyStore.addGenre(g);
+      });
+    });
+
     getTopArtists().then((topArtists) => {
       topArtists.items.map(async (artist) => {
         GalaxyStore.addSystem(artist);
@@ -100,16 +128,16 @@
           relatedArtists.artists.slice(0, 20).map(async (relatedArtist) => {
             GalaxyStore.addSystem(relatedArtist);
           });
-        });
-      });
-    });
 
-    getTopTracks().then((topTracks) => {
-      topTracks.items.forEach((track) => {
-        const artist = track.artists[0];
-        if (GalaxyStore.containsSystem(artist.id)) {
-          GalaxyStore.addPlanet(track);
-        }
+          getTopTracks().then((topTracks) => {
+            topTracks.items.forEach((track) => {
+              const artist = track.artists[0];
+              if (GalaxyStore.containsSystem(artist.id)) {
+                GalaxyStore.addPlanet(track);
+              }
+            });
+          });
+        });
       });
     });
   };
@@ -221,6 +249,40 @@
     }
   };
 
+  function intToHex(i: number) {
+    const r = (i >> 16) & 255;
+    const g = (i >> 8) & 255;
+    const b = i & 255;
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+  }
+
+  function blendColors(colors: Array<string>) {
+    const rValues = colors.map((color) =>
+      parseInt(color.slice(4, color.indexOf(',')))
+    );
+    const gValues = colors.map((color) =>
+      parseInt(color.slice(color.indexOf(',') + 1, color.lastIndexOf(',')))
+    );
+    const bValues = colors.map((color) =>
+      parseInt(color.slice(color.lastIndexOf(',') + 1, color.indexOf(')')))
+    );
+
+    const r = Math.round(rValues.reduce((a, b) => a + b) / rValues.length);
+    const g = Math.round(gValues.reduce((a, b) => a + b) / gValues.length);
+    const b = Math.round(bValues.reduce((a, b) => a + b) / bValues.length);
+
+    return intToHex((r << 16) + (g << 8) + b);
+  }
+
+  function getColorForGenres(genres: Array<string>) {
+    const colors = genres
+      .filter((genre) => $GalaxyStore.genreColors?.has(genre))
+      .map(
+        (genre) => $GalaxyStore.genreColors?.get(genre) || 'rgb(128, 128, 128)'
+      );
+    return colors.length < 1 ? '#334455' : blendColors(colors);
+  }
+
   onMount(() => {
     createArtistSystems();
     return () => {
@@ -268,9 +330,7 @@
         position={system[1].position}
         color={selectedSystemId === system[1].artist.id
           ? ''
-          : `#${Math.floor(Math.random() * 0xffffff)
-              .toString(16)
-              .padStart(6, '0')}`}
+          : getColorForGenres(system[1].artist.genres)}
         planets={system[1].planets}
         clickCallback={() => {
           if (selectedSystemId !== system[1].artist.id && !isCameraFocusing) {

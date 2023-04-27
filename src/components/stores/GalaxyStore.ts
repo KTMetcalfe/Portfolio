@@ -30,62 +30,7 @@ type SystemMapType = Map<
 >;
 type GalaxyStoreType = {
   systems: SystemMapType;
-};
-
-const getRandomPosition = (
-  index: number,
-  existingPositions: PositionType[]
-) => {
-  let attempt = 0;
-  let maxAttempts = 1000;
-
-  while (attempt < maxAttempts) {
-    const armIndex = index % galaxyArms;
-    const randomTheta = Math.random() * 2 * Math.PI;
-    const radialDist =
-      galaxyScale * Math.exp(galaxyTightness * randomTheta) - centerOffset;
-    const radialDistWithNoise = radialDist + Math.random() * radialNoise;
-
-    const randX =
-      radialDistWithNoise *
-      Math.cos(randomTheta + armIndex * ((2 * Math.PI) / galaxyArms));
-    const randY = Math.random() * 50 - 25;
-    const randZ =
-      radialDistWithNoise *
-      Math.sin(randomTheta + armIndex * ((2 * Math.PI) / galaxyArms));
-
-    const newPosition = [randX, randY, randZ] as PositionType;
-
-    let valid = true;
-
-    for (const existingPosition of existingPositions) {
-      const dx = Math.abs(newPosition[0] - existingPosition[0]);
-      const dy = Math.abs(newPosition[1] - existingPosition[1]);
-      const dz = Math.abs(newPosition[2] - existingPosition[2]);
-
-      if (dx < minDist && dz < minDist && dy < minHeightDif) {
-        valid = false;
-        break;
-      }
-    }
-
-    if (valid) {
-      return newPosition;
-    }
-
-    attempt++;
-  }
-
-  console.warn('Could not find a valid position for planet');
-  return [0, 0, 0] as PositionType;
-};
-
-const getPositionAroundStar = (index: number, radius: number) => {
-  const angle = (index / planetLimit) * 2 * Math.PI;
-  const x = radius * Math.cos(angle);
-  const y = 0;
-  const z = radius * Math.sin(angle);
-  return [x, y, z] as PositionType;
+  genreColors?: Map<string, string>;
 };
 
 // Artists are systems
@@ -96,6 +41,83 @@ const defaultGalaxyStore: GalaxyStoreType = {
 const createGalaxyStore = () => {
   const { subscribe, set, update } =
     writable<GalaxyStoreType>(defaultGalaxyStore);
+
+  const getRandomPosition = (
+    index: number,
+    existingPositions: PositionType[]
+  ) => {
+    let attempt = 0;
+    let maxAttempts = 1000;
+
+    while (attempt < maxAttempts) {
+      const armIndex = index % galaxyArms;
+      const randomTheta = Math.random() * 2 * Math.PI;
+      const radialDist =
+        galaxyScale * Math.exp(galaxyTightness * randomTheta) - centerOffset;
+      const radialDistWithNoise = radialDist + Math.random() * radialNoise;
+
+      const randX =
+        radialDistWithNoise *
+        Math.cos(randomTheta + armIndex * ((2 * Math.PI) / galaxyArms));
+      const randY = Math.random() * 50 - 25;
+      const randZ =
+        radialDistWithNoise *
+        Math.sin(randomTheta + armIndex * ((2 * Math.PI) / galaxyArms));
+
+      const newPosition = [randX, randY, randZ] as PositionType;
+
+      let valid = true;
+
+      for (const existingPosition of existingPositions) {
+        const dx = Math.abs(newPosition[0] - existingPosition[0]);
+        const dy = Math.abs(newPosition[1] - existingPosition[1]);
+        const dz = Math.abs(newPosition[2] - existingPosition[2]);
+
+        if (dx < minDist && dz < minDist && dy < minHeightDif) {
+          valid = false;
+          break;
+        }
+      }
+
+      if (valid) {
+        return newPosition;
+      }
+
+      attempt++;
+    }
+
+    console.warn('Could not find a valid position for planet');
+    return [0, 0, 0] as PositionType;
+  };
+
+  const getPositionAroundStar = (index: number, radius: number) => {
+    const angle = (index / planetLimit) * 2 * Math.PI;
+    const x = radius * Math.cos(angle);
+    const y = 0;
+    const z = radius * Math.sin(angle);
+    return [x, y, z] as PositionType;
+  };
+
+  function hashCode(str: string) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0; // Convert to a 32-bit integer
+    }
+    return hash;
+  }
+
+  function intToRGB(i: number) {
+    const r = (i >> 16) & 255;
+    const g = (i >> 8) & 255;
+    const b = i & 255;
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  function getColorForGenre(genreName: string) {
+    const hash = hashCode(genreName);
+    return intToRGB(hash);
+  }
 
   return {
     subscribe,
@@ -169,6 +191,23 @@ const createGalaxyStore = () => {
         return state;
       });
       return found !== undefined && found !== null;
+    },
+    addGenre: (genre: string) => {
+      update((state) => {
+        if (state.genreColors === undefined) {
+          state.genreColors = new Map();
+        }
+        state.genreColors.set(genre, getColorForGenre(genre));
+        return state;
+      });
+    },
+    removeGenre: (genre: string) => {
+      update((state) => {
+        if (state.genreColors !== undefined) {
+          state.genreColors.delete(genre);
+        }
+        return state;
+      });
     },
     clear: () => set(defaultGalaxyStore),
   };
