@@ -134,54 +134,92 @@
     start: Vector3,
     end: Vector3,
     time: number,
-    onUpdate: (current: Vector3) => void
+    onUpdate: (current: Vector3) => void,
+    ease?: (t: number) => number
   ) =>
-    new Promise<void>((res) => {
-      const lerpSteps = Math.floor((time / 1000) * 100);
-      const lerpVector = end.clone().sub(start).divideScalar(lerpSteps);
-
-      const currentLerp = start.clone();
+    new Promise<Vector3>((res) => {
+      const lerpSteps = time >= 100 ? time / 5 : 20;
 
       let counter = 1;
       const interval = setInterval(() => {
-        currentLerp.add(lerpVector);
+        const t = ease ? ease(counter / lerpSteps) : counter / lerpSteps;
+        const currentLerp = start.clone().lerp(end, t);
 
         onUpdate(currentLerp);
 
         if (counter >= lerpSteps) {
           clearInterval(interval);
-          res();
+          res(currentLerp);
         }
         counter++;
       }, time / lerpSteps);
     });
 
+  let isCameraFocusing = false;
   const changeCameraFocus = (
     target: Vector3,
     position: Vector3,
     invertAnimation?: boolean
   ) => {
-    // Lerp from current camera target to new camera target
+    if (isCameraFocusing) return;
+    isCameraFocusing = true;
+
+    const quinticEaseInOut = (t: number) => {
+      if (t < 0.5) {
+        return 16 * t * t * t * t * t;
+      }
+      t = t - 1;
+      return 1 + 16 * t * t * t * t * t;
+    };
+
     if (invertAnimation) {
-      customLerp(cameraRef.position, position, 500, (current) => {
-        cameraRef.position.copy(current);
-        controlsRef.update();
-      }).then(() => {
-        // Lerp from current camera position to new camera position
-        customLerp(controlsRef.target, target, 250, (current) => {
-          controlsRef.target.set(current.x, current.y, current.z);
+      // Lerp from current camera target to new camera target
+      customLerp(
+        cameraRef.position.clone(),
+        position,
+        750,
+        (current) => {
+          cameraRef.position.copy(current);
           controlsRef.update();
+        },
+        quinticEaseInOut
+      ).then(() => {
+        // Lerp from current camera position to new camera position
+        customLerp(
+          controlsRef.target.clone(),
+          target,
+          500,
+          (current) => {
+            controlsRef.target.set(current.x, current.y, current.z);
+            controlsRef.update();
+          },
+          quinticEaseInOut
+        ).then(() => {
+          isCameraFocusing = false;
         });
       });
     } else {
-      customLerp(controlsRef.target, target, 250, (current) => {
-        controlsRef.target.set(current.x, current.y, current.z);
-        controlsRef.update();
-      }).then(() => {
-        // Lerp from current camera position to new camera position
-        customLerp(cameraRef.position, position, 500, (current) => {
-          cameraRef.position.copy(current);
+      customLerp(
+        controlsRef.target.clone(),
+        target,
+        1000,
+        (current) => {
+          controlsRef.target.set(current.x, current.y, current.z);
           controlsRef.update();
+        },
+        quinticEaseInOut
+      ).then(() => {
+        customLerp(
+          cameraRef.position.clone(),
+          position,
+          1500,
+          (current) => {
+            cameraRef.position.copy(current);
+            controlsRef.update();
+          },
+          quinticEaseInOut
+        ).then(() => {
+          isCameraFocusing = false;
         });
       });
     }
