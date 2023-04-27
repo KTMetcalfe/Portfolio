@@ -26,6 +26,7 @@ type SystemMapType = Map<
     artist: DetailedArtistItem;
     position: PositionType;
     planets: PlanetMapType;
+    color: string;
   }
 >;
 type GalaxyStoreType = {
@@ -97,6 +98,69 @@ const createGalaxyStore = () => {
     return [x, y, z] as PositionType;
   };
 
+  function hexToRgb(hex: string) {
+    const rgb = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return rgb
+      ? {
+          r: parseInt(rgb[1], 16),
+          g: parseInt(rgb[2], 16),
+          b: parseInt(rgb[3], 16),
+        }
+      : { r: 0, g: 0, b: 0 };
+  }
+
+  function rgbToHex(r: number, g: number, b: number) {
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+
+  function blendColors(color1: string, color2: string, ratio: number) {
+    const c1 = hexToRgb(color1);
+    const c2 = hexToRgb(color2);
+
+    const blended = {
+      r: Math.round(c1.r * ratio + c2.r * (1 - ratio)),
+      g: Math.round(c1.g * ratio + c2.g * (1 - ratio)),
+      b: Math.round(c1.b * ratio + c2.b * (1 - ratio)),
+    };
+
+    return rgbToHex(blended.r, blended.g, blended.b);
+  }
+
+  function getColorForArtist(popularity: number, followers?: number) {
+    const popularityColorStart = '#FFFF00'; // yellow
+    const popularityColorEnd = '#0000FF'; // blue
+
+    const maxPopularity = 100;
+
+    const popularityRatio = popularity / maxPopularity;
+
+    const popularityColor = blendColors(
+      popularityColorStart,
+      popularityColorEnd,
+      popularityRatio
+    );
+
+    // Follower count is not currently working well
+    if (followers) {
+      const followersColorStart = '#00FF00'; // green
+      const followersColorEnd = '#FFFF00'; // yellow
+
+      const maxFollowers = 50000000;
+
+      const followersRatio = Math.min(followers, maxFollowers) / maxFollowers;
+
+      const followersColor = blendColors(
+        followersColorStart,
+        followersColorEnd,
+        followersRatio
+      );
+
+      return blendColors(popularityColor, followersColor, 0.5);
+    }
+
+    return popularityColor;
+  }
+
   return {
     subscribe,
     addSystem: (
@@ -124,6 +188,7 @@ const createGalaxyStore = () => {
                 ])
               )
             : new Map(),
+          color: getColorForArtist(artist.popularity),
         };
         state.systems.set(artist.id, newSystem);
         return state;

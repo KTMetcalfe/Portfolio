@@ -1,91 +1,15 @@
 <script lang="ts">
-  import type {
-    DetailedArtistItem,
-    DetailedTrackItem,
-    TopArtists,
-    TopTracks,
+  import {
+    getTopArtists,
+    getRelatedArtists,
+    getTopTracks,
   } from '../../components/helpers/spotify';
-  import { getTokensFromRefresh } from '../../components/helpers/spotify';
   import { Canvas, OrbitControls, T } from '@threlte/core';
   import ArtistSystem from './ArtistSystem.svelte';
   import { onMount } from 'svelte';
   import { GalaxyStore } from '../../components/stores/GalaxyStore';
   import { PerspectiveCamera, Vector3 } from 'three';
   import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls';
-
-  const getTopOfType = async (top_type: 'artists' | 'tracks') => {
-    const response: TopArtists | TopTracks = await fetch(
-      `https://api.spotify.com/v1/me/top/${top_type}?limit=50`,
-      {
-        headers: {
-          Authorization:
-            'Bearer ' + localStorage.getItem('spotify_access_token'),
-        },
-      }
-    ).then(async (res) => {
-      if (res.status === 401) {
-        const isAuth = await getTokensFromRefresh();
-        if (!isAuth) {
-          window.location.href = '/galafy';
-        }
-      }
-      return res.json();
-    });
-
-    return response;
-  };
-
-  const getTopArtists = async () => {
-    return (await getTopOfType('artists')) as TopArtists;
-  };
-
-  const getTopTracks = async () => {
-    return (await getTopOfType('tracks')) as TopTracks;
-  };
-
-  const getRelatedArtists = async (artist_id: string) => {
-    const response: { artists: Array<DetailedArtistItem> } = await fetch(
-      `https://api.spotify.com/v1/artists/${artist_id}/related-artists`,
-      {
-        headers: {
-          Authorization:
-            'Bearer ' + localStorage.getItem('spotify_access_token'),
-        },
-      }
-    ).then(async (res) => {
-      if (res.status === 401) {
-        const isAuth = await getTokensFromRefresh();
-        if (!isAuth) {
-          window.location.href = '/galafy';
-        }
-      }
-      return res.json();
-    });
-
-    return response;
-  };
-
-  const getArtistTracks = async (artist_id: string) => {
-    const response: { tracks: Array<DetailedTrackItem> } = await fetch(
-      `https://api.spotify.com/v1/artists/${artist_id}/top-tracks?country=US`,
-      {
-        headers: {
-          Authorization:
-            'Bearer ' + localStorage.getItem('spotify_access_token'),
-        },
-      }
-    ).then(async (res) => {
-      if (res.status === 401) {
-        const isAuth = await getTokensFromRefresh();
-        if (!isAuth) {
-          window.location.href = '/galafy';
-        }
-      }
-      return res.json();
-    });
-
-    return response;
-  };
 
   const createArtistSystems = async () => {
     const topArtists = await getTopArtists();
@@ -220,63 +144,6 @@
     }
   };
 
-  function hexToRgb(hex: string) {
-    const rgb = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return rgb
-      ? {
-          r: parseInt(rgb[1], 16),
-          g: parseInt(rgb[2], 16),
-          b: parseInt(rgb[3], 16),
-        }
-      : { r: 0, g: 0, b: 0 };
-  }
-
-  function rgbToHex(r: number, g: number, b: number) {
-    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-  }
-
-  function blendColors(color1: string, color2: string, ratio: number) {
-    const c1 = hexToRgb(color1);
-    const c2 = hexToRgb(color2);
-
-    const blended = {
-      r: Math.round(c1.r * ratio + c2.r * (1 - ratio)),
-      g: Math.round(c1.g * ratio + c2.g * (1 - ratio)),
-      b: Math.round(c1.b * ratio + c2.b * (1 - ratio)),
-    };
-
-    return rgbToHex(blended.r, blended.g, blended.b);
-  }
-
-  function getColorForArtist(popularity: number, followers: number) {
-    const popularityColorStart = '#FFFF00'; // yellow
-    const popularityColorEnd = '#0000FF'; // blue
-
-    const followersColorStart = '#00FF00'; // green
-    const followersColorEnd = '#FFFF00'; // yellow
-
-    const maxPopularity = 100;
-    const maxFollowers = 50000000;
-
-    const popularityRatio = popularity / maxPopularity;
-    const followersRatio = Math.min(followers, maxFollowers) / maxFollowers;
-
-    const popularityColor = blendColors(
-      popularityColorStart,
-      popularityColorEnd,
-      popularityRatio
-    );
-    const followersColor = blendColors(
-      followersColorStart,
-      followersColorEnd,
-      followersRatio
-    );
-
-    // Follower count is not currently working well
-    // return blendColors(popularityColor, followersColor, 0.5);
-    return popularityColor;
-  }
-
   onMount(() => {
     createArtistSystems();
     return () => {
@@ -320,21 +187,13 @@
 
     {#each [...$GalaxyStore.systems] as system, i (system[0])}
       <ArtistSystem
+        isSelected={selectedSystemId === system[1].artist.id}
+        color={system[1].color}
         artist={system[1].artist}
         position={system[1].position}
-        color={selectedSystemId === system[1].artist.id
-          ? ''
-          : getColorForArtist(
-              system[1].artist.popularity,
-              system[1].artist.followers.total
-            )}
         planets={system[1].planets}
         clickCallback={() => {
-          console.log(
-            system,
-            system[1].artist.popularity,
-            system[1].artist.followers.total
-          );
+          console.log(system);
           if (selectedSystemId !== system[1].artist.id && !isCameraFocusing) {
             selectedSystemId = system[1].artist.id;
             const systemPosition = new Vector3(

@@ -18,10 +18,12 @@
     }
   >();
   export let clickCallback: () => void = () => {};
+  export let isSelected = false;
 
   export let scale = 1;
   let scaleMultiple = tweened(1, { duration: 100 });
 
+  // TODO: Decide if animation is a good idea
   export const { start, stop, started } = useFrame(
     () => {
       const dist = Math.sqrt(
@@ -61,12 +63,12 @@
       on:click={clickCallback}
     />
     <T.SphereGeometry args={[1, 32, 32]} />
-    {#if color !== ''}
-      <T.MeshStandardMaterial color={new Color(`#${color.replace('#', '')}`)} />
-    {:else if artist.images.length === 0}
-      <T.MeshStandardMaterial color={new Color('#666666')} />
-    {:else}
+    {#if isSelected && artist.images.length > 0}
       <T.MeshStandardMaterial map={useTexture(artist.images[0].url)} />
+    {:else if color !== ''}
+      <T.MeshStandardMaterial color={new Color(`#${color.replace('#', '')}`)} />
+    {:else}
+      <T.MeshStandardMaterial color={new Color('#666666')} />
     {/if}
   </T.Mesh>
   <!-- Surrounding song planets -->
@@ -74,16 +76,16 @@
     <T.Mesh position={planet[1].position} scale={scale * 0.5} let:ref>
       <InteractiveObject object={ref} interactive />
       <T.SphereGeometry args={[1, 32, 32]} />
-      {#if color !== ''}
-        <T.MeshStandardMaterial
-          color={new Color(`#${color.replace('#', '')}`)}
-        />
-      {:else if planet[1].track.album.images.length === 0}
-        <T.MeshStandardMaterial color={new Color('#666666')} />
-      {:else}
+      {#if isSelected && planet[1].track.album.images.length > 0}
         <T.MeshStandardMaterial
           map={useTexture(planet[1].track.album.images[0].url)}
         />
+      {:else if color !== ''}
+        <T.MeshStandardMaterial
+          color={new Color(`#${color.replace('#', '')}`)}
+        />
+      {:else}
+        <T.MeshStandardMaterial color={new Color('#666666')} />
       {/if}
     </T.Mesh>
   {/each}
