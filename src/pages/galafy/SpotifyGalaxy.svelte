@@ -13,9 +13,6 @@
   import { PerspectiveCamera, Vector3 } from 'three';
   import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls';
 
-  let cameraRef: PerspectiveCamera;
-  let controlsRef: OrbitControlsType;
-
   const getTopOfType = async (top_type: 'artists' | 'tracks') => {
     const response: TopArtists | TopTracks = await fetch(
       `https://api.spotify.com/v1/me/top/${top_type}?limit=50`,
@@ -155,7 +152,6 @@
       }, time / lerpSteps);
     });
 
-  let isCameraFocusing = false;
   const changeCameraFocus = (
     target: Vector3,
     position: Vector3,
@@ -231,6 +227,12 @@
       GalaxyStore.clear();
     };
   });
+
+  let cameraRef: PerspectiveCamera;
+  let controlsRef: OrbitControlsType;
+
+  let isCameraFocusing = false;
+  let selectedSystemId: string | null = null;
 </script>
 
 <div
@@ -264,20 +266,25 @@
       <ArtistSystem
         artist={system[1].artist}
         position={system[1].position}
-        color={`#${Math.floor(Math.random() * 0xffffff)
-          .toString(16)
-          .padStart(6, '0')}`}
+        color={selectedSystemId === system[1].artist.id
+          ? ''
+          : `#${Math.floor(Math.random() * 0xffffff)
+              .toString(16)
+              .padStart(6, '0')}`}
         planets={system[1].planets}
         clickCallback={() => {
-          const systemPosition = new Vector3(
-            system[1].position[0],
-            system[1].position[1],
-            system[1].position[2]
-          );
-          changeCameraFocus(
-            systemPosition,
-            getCameraOrbitPosition(cameraRef.position, systemPosition)
-          );
+          if (selectedSystemId !== system[1].artist.id && !isCameraFocusing) {
+            selectedSystemId = system[1].artist.id;
+            const systemPosition = new Vector3(
+              system[1].position[0],
+              system[1].position[1],
+              system[1].position[2]
+            );
+            changeCameraFocus(
+              systemPosition,
+              getCameraOrbitPosition(cameraRef.position, systemPosition)
+            );
+          }
         }}
       />
     {/each}
