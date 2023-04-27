@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import type { DetailedArtistItem, DetailedTrackItem } from '../helpers/spotify';
+import { Vector3 } from 'three';
 
 const galaxyArms = 4;
 const galaxyScale = 1000;
@@ -24,6 +25,7 @@ type SystemMapType = Map<
   DetailedArtistItem['id'],
   {
     artist: DetailedArtistItem;
+    default_position: PositionType;
     position: PositionType;
     planets: PlanetMapType;
     color: string;
@@ -168,12 +170,14 @@ const createGalaxyStore = () => {
       tracks?: Array<DetailedTrackItem>
     ) =>
       update((state) => {
+        const randomPosition = getRandomPosition(
+          state.systems.size,
+          [...state.systems].map(([_, system]) => system.position)
+        );
         const newSystem = {
           artist,
-          position: getRandomPosition(
-            state.systems.size,
-            [...state.systems].map(([_, system]) => system.position)
-          ),
+          default_position: randomPosition,
+          position: randomPosition,
           planets: tracks
             ? new Map(
                 tracks.map((track) => [
@@ -232,6 +236,52 @@ const createGalaxyStore = () => {
       });
       return found !== undefined && found !== null;
     },
+    expandPositions: (artist_id: string) => {
+      update((state) => {
+        state.systems.forEach((system, id) => {
+          if (id !== artist_id && state.systems.get(artist_id) !== undefined) {
+            const systemPosition = new Vector3(
+              system.default_position[0],
+              system.default_position[1],
+              system.default_position[2]
+            );
+
+            // Calculate the direction vector from the selected system to the current system
+            const direction = systemPosition
+              .clone()
+              .sub(
+                new Vector3(
+                  state.systems.get(artist_id)!.default_position[0],
+                  state.systems.get(artist_id)!.default_position[1],
+                  state.systems.get(artist_id)!.default_position[2]
+                )
+              );
+
+            // Scale the direction vector by a factor (e.g., 2 for doubling the distance)
+            const scaleFactor = 5;
+            direction.multiplyScalar(scaleFactor);
+
+            // Update the position of the current system
+            system.position = [
+              state.systems.get(artist_id)!.default_position[0] + direction.x,
+              state.systems.get(artist_id)!.default_position[1] + direction.y,
+              state.systems.get(artist_id)!.default_position[2] + direction.z,
+            ];
+          }
+        });
+
+        return state;
+      });
+    },
+    resetPositions: () => {
+      update((state) => {
+        state.systems.forEach((system) => {
+          system.position = system.default_position;
+        });
+        return state;
+      });
+    },
+    update,
     clear: () => set(defaultGalaxyStore),
   };
 };

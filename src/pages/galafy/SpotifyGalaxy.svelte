@@ -75,7 +75,7 @@
       }, time / lerpSteps);
     });
 
-  const changeCameraFocus = (
+  const changeCameraFocus = async (
     target: Vector3,
     position: Vector3,
     invertAnimation?: boolean
@@ -93,7 +93,7 @@
 
     if (invertAnimation) {
       // Lerp from current camera target to new camera target
-      customLerp(
+      await customLerp(
         cameraRef.position.clone(),
         position,
         750,
@@ -102,9 +102,9 @@
           controlsRef.update();
         },
         quinticEaseInOut
-      ).then(() => {
+      ).then(async () => {
         // Lerp from current camera position to new camera position
-        customLerp(
+        await customLerp(
           controlsRef.target.clone(),
           target,
           500,
@@ -118,7 +118,7 @@
         });
       });
     } else {
-      customLerp(
+      await customLerp(
         controlsRef.target.clone(),
         target,
         1000,
@@ -127,8 +127,8 @@
           controlsRef.update();
         },
         quinticEaseInOut
-      ).then(() => {
-        customLerp(
+      ).then(async () => {
+        await customLerp(
           cameraRef.position.clone(),
           position,
           1500,
@@ -160,8 +160,11 @@
 
 <div
   class="w-full h-[calc(100vh-4rem)] overflow-hidden bg-black"
-  on:contextmenu|preventDefault={() =>
-    changeCameraFocus(new Vector3(0, 0, 0), new Vector3(750, 750, 0), true)}
+  on:contextmenu|preventDefault={() => {
+    selectedSystemId = null;
+    changeCameraFocus(new Vector3(0, 0, 0), new Vector3(750, 750, 0), true);
+    GalaxyStore.resetPositions();
+  }}
 >
   <Canvas>
     <T.PerspectiveCamera
@@ -193,8 +196,8 @@
         position={system[1].position}
         planets={system[1].planets}
         clickCallback={() => {
-          console.log(system);
           if (selectedSystemId !== system[1].artist.id && !isCameraFocusing) {
+            const lastSelectedSystemId = selectedSystemId;
             selectedSystemId = system[1].artist.id;
             const systemPosition = new Vector3(
               system[1].position[0],
@@ -204,7 +207,11 @@
             changeCameraFocus(
               systemPosition,
               getCameraOrbitPosition(cameraRef.position, systemPosition)
-            );
+            ).then(() => {
+              if (lastSelectedSystemId === null) {
+                GalaxyStore.expandPositions(system[1].artist.id);
+              }
+            });
           }
         }}
       />
