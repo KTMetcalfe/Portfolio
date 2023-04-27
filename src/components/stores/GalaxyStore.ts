@@ -30,7 +30,6 @@ type SystemMapType = Map<
 >;
 type GalaxyStoreType = {
   systems: SystemMapType;
-  genreColors?: Map<string, string>;
 };
 
 // Artists are systems
@@ -97,27 +96,6 @@ const createGalaxyStore = () => {
     const z = radius * Math.sin(angle);
     return [x, y, z] as PositionType;
   };
-
-  function hashCode(str: string) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = (hash << 5) - hash + str.charCodeAt(i);
-      hash |= 0; // Convert to a 32-bit integer
-    }
-    return hash;
-  }
-
-  function intToRGB(i: number) {
-    const r = (i >> 16) & 255;
-    const g = (i >> 8) & 255;
-    const b = i & 255;
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-
-  function getColorForGenre(genreName: string) {
-    const hash = hashCode(genreName);
-    return intToRGB(hash);
-  }
 
   return {
     subscribe,
@@ -191,23 +169,6 @@ const createGalaxyStore = () => {
         return state;
       });
       return found !== undefined && found !== null;
-    },
-    addGenre: (genre: string) => {
-      update((state) => {
-        if (state.genreColors === undefined) {
-          state.genreColors = new Map();
-        }
-        state.genreColors.set(genre, getColorForGenre(genre));
-        return state;
-      });
-    },
-    removeGenre: (genre: string) => {
-      update((state) => {
-        if (state.genreColors !== undefined) {
-          state.genreColors.delete(genre);
-        }
-        return state;
-      });
     },
     clear: () => set(defaultGalaxyStore),
   };

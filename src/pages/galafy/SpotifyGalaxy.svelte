@@ -87,58 +87,29 @@
     return response;
   };
 
-  const getAvailableGenres = async () => {
-    const response: { genres: Array<string> } = await fetch(
-      'https://api.spotify.com/v1/recommendations/available-genre-seeds',
-      {
-        headers: {
-          Authorization:
-            'Bearer ' + localStorage.getItem('spotify_access_token'),
-        },
-      }
-    ).then(async (res) => {
-      if (res.status === 401) {
-        const isAuth = await getTokensFromRefresh();
-        if (!isAuth) {
-          window.location.href = '/galafy';
-        }
-      }
-      return res.json();
-    });
-
-    return response;
-  };
-
   const createArtistSystems = async () => {
-    await getAvailableGenres().then((genres) => {
-      genres.genres.map((g) => {
-        GalaxyStore.addGenre(g);
-      });
-    });
-
-    getTopArtists().then((topArtists) => {
+    const topArtists = await getTopArtists();
+    await Promise.all(
       topArtists.items.map(async (artist) => {
         GalaxyStore.addSystem(artist);
 
-        getRelatedArtists(artist.id).then((relatedArtists) => {
-          relatedArtists.artists = relatedArtists.artists.filter(
-            (relatedArtist) => !GalaxyStore.containsSystem(relatedArtist.id)
-          );
-          // Change amount of related artists to add here
-          relatedArtists.artists.slice(0, 20).map(async (relatedArtist) => {
-            GalaxyStore.addSystem(relatedArtist);
-          });
-
-          getTopTracks().then((topTracks) => {
-            topTracks.items.forEach((track) => {
-              const artist = track.artists[0];
-              if (GalaxyStore.containsSystem(artist.id)) {
-                GalaxyStore.addPlanet(track);
-              }
-            });
-          });
+        const relatedArtists = await getRelatedArtists(artist.id);
+        relatedArtists.artists = relatedArtists.artists.filter(
+          (relatedArtist) => !GalaxyStore.containsSystem(relatedArtist.id)
+        );
+        // Change amount of related artists to add here
+        relatedArtists.artists.slice(0, 20).map((relatedArtist) => {
+          GalaxyStore.addSystem(relatedArtist);
         });
-      });
+      })
+    );
+
+    const topTracks = await getTopTracks();
+    topTracks.items.map((track) => {
+      const artist = track.artists[0];
+      if (GalaxyStore.containsSystem(artist.id)) {
+        GalaxyStore.addPlanet(track);
+      }
     });
   };
 
@@ -249,38 +220,61 @@
     }
   };
 
-  function intToHex(i: number) {
-    const r = (i >> 16) & 255;
-    const g = (i >> 8) & 255;
-    const b = i & 255;
-    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+  function hexToRgb(hex: string) {
+    const rgb = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return rgb
+      ? {
+          r: parseInt(rgb[1], 16),
+          g: parseInt(rgb[2], 16),
+          b: parseInt(rgb[3], 16),
+        }
+      : { r: 0, g: 0, b: 0 };
   }
 
-  function blendColors(colors: Array<string>) {
-    const rValues = colors.map((color) =>
-      parseInt(color.slice(4, color.indexOf(',')))
-    );
-    const gValues = colors.map((color) =>
-      parseInt(color.slice(color.indexOf(',') + 1, color.lastIndexOf(',')))
-    );
-    const bValues = colors.map((color) =>
-      parseInt(color.slice(color.lastIndexOf(',') + 1, color.indexOf(')')))
-    );
-
-    const r = Math.round(rValues.reduce((a, b) => a + b) / rValues.length);
-    const g = Math.round(gValues.reduce((a, b) => a + b) / gValues.length);
-    const b = Math.round(bValues.reduce((a, b) => a + b) / bValues.length);
-
-    return intToHex((r << 16) + (g << 8) + b);
+  function rgbToHex(r: number, g: number, b: number) {
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
   }
 
-  function getColorForGenres(genres: Array<string>) {
-    const colors = genres
-      .filter((genre) => $GalaxyStore.genreColors?.has(genre))
-      .map(
-        (genre) => $GalaxyStore.genreColors?.get(genre) || 'rgb(128, 128, 128)'
-      );
-    return colors.length < 1 ? '#334455' : blendColors(colors);
+  function blendColors(color1: string, color2: string, ratio: number) {
+    const c1 = hexToRgb(color1);
+    const c2 = hexToRgb(color2);
+
+    const blended = {
+      r: Math.round(c1.r * ratio + c2.r * (1 - ratio)),
+      g: Math.round(c1.g * ratio + c2.g * (1 - ratio)),
+      b: Math.round(c1.b * ratio + c2.b * (1 - ratio)),
+    };
+
+    return rgbToHex(blended.r, blended.g, blended.b);
+  }
+
+  function getColorForArtist(popularity: number, followers: number) {
+    const popularityColorStart = '#FFFF00'; // yellow
+    const popularityColorEnd = '#0000FF'; // blue
+
+    const followersColorStart = '#00FF00'; // green
+    const followersColorEnd = '#FFFF00'; // yellow
+
+    const maxPopularity = 100;
+    const maxFollowers = 50000000;
+
+    const popularityRatio = popularity / maxPopularity;
+    const followersRatio = Math.min(followers, maxFollowers) / maxFollowers;
+
+    const popularityColor = blendColors(
+      popularityColorStart,
+      popularityColorEnd,
+      popularityRatio
+    );
+    const followersColor = blendColors(
+      followersColorStart,
+      followersColorEnd,
+      followersRatio
+    );
+
+    // Follower count is not currently working well
+    // return blendColors(popularityColor, followersColor, 0.5);
+    return popularityColor;
   }
 
   onMount(() => {
@@ -330,9 +324,17 @@
         position={system[1].position}
         color={selectedSystemId === system[1].artist.id
           ? ''
-          : getColorForGenres(system[1].artist.genres)}
+          : getColorForArtist(
+              system[1].artist.popularity,
+              system[1].artist.followers.total
+            )}
         planets={system[1].planets}
         clickCallback={() => {
+          console.log(
+            system,
+            system[1].artist.popularity,
+            system[1].artist.followers.total
+          );
           if (selectedSystemId !== system[1].artist.id && !isCameraFocusing) {
             selectedSystemId = system[1].artist.id;
             const systemPosition = new Vector3(
