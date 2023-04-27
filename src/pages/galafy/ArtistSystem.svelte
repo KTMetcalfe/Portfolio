@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { T, InteractiveObject, useTexture, useFrame } from '@threlte/core';
+  import { T, InteractiveObject, useTexture } from '@threlte/core';
   import type {
     DetailedArtistItem,
     DetailedTrackItem,
@@ -22,30 +22,6 @@
 
   export let scale = 1;
   let scaleMultiple = tweened(1, { duration: 100 });
-
-  // TODO: Decide if animation is a good idea
-  export const { start, stop, started } = useFrame(
-    () => {
-      const dist = Math.sqrt(
-        position[0] ** 2 + position[1] ** 2 + position[2] ** 2
-      );
-      const rotChange = -0.25;
-      // const rotChange = -5 / dist;
-
-      const newX =
-        position[0] * Math.cos(rotChange / dist) -
-        position[2] * Math.sin(rotChange / dist);
-      const newZ =
-        position[0] * Math.sin(rotChange / dist) +
-        position[2] * Math.cos(rotChange / dist);
-
-      position[0] = newX;
-      position[2] = newZ;
-    },
-    {
-      autostart: false,
-    }
-  );
 </script>
 
 <T.Group {position}>

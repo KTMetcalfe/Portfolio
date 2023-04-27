@@ -165,18 +165,15 @@ const createGalaxyStore = () => {
     subscribe,
     addSystem: (
       artist: DetailedArtistItem,
-      tracks?: Array<DetailedTrackItem>,
-      position?: PositionType
+      tracks?: Array<DetailedTrackItem>
     ) =>
       update((state) => {
         const newSystem = {
           artist,
-          position:
-            position ??
-            getRandomPosition(
-              state.systems.size,
-              [...state.systems].map(([_, system]) => system.position)
-            ),
+          position: getRandomPosition(
+            state.systems.size,
+            [...state.systems].map(([_, system]) => system.position)
+          ),
           planets: tracks
             ? new Map(
                 tracks.map((track) => [
