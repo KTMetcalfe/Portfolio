@@ -75,73 +75,80 @@
       }, time / lerpSteps);
     });
 
-  const changeCameraFocus = async (
-    target: Vector3,
-    position: Vector3,
-    invertAnimation?: boolean
-  ) => {
+  const quinticEaseInOut = (t: number) => {
+    if (t < 0.5) {
+      return 16 * t * t * t * t * t;
+    }
+    t = t - 1;
+    return 1 + 16 * t * t * t * t * t;
+  };
+
+  const resetCameraFocus = async (onPosition?: () => void) => {
     if (isCameraFocusing) return;
     isCameraFocusing = true;
 
-    const quinticEaseInOut = (t: number) => {
-      if (t < 0.5) {
-        return 16 * t * t * t * t * t;
-      }
-      t = t - 1;
-      return 1 + 16 * t * t * t * t * t;
-    };
+    await customLerp(
+      cameraRef.position.clone(),
+      new Vector3(750, 750, 0),
+      750,
+      (current) => {
+        cameraRef.position.copy(current);
+        controlsRef.update();
+      },
+      quinticEaseInOut
+    ).then(async () => {
+      if (onPosition) onPosition();
 
-    if (invertAnimation) {
-      // Lerp from current camera target to new camera target
-      await customLerp(
-        cameraRef.position.clone(),
-        position,
-        750,
-        (current) => {
-          cameraRef.position.copy(current);
-          controlsRef.update();
-        },
-        quinticEaseInOut
-      ).then(async () => {
-        // Lerp from current camera position to new camera position
-        await customLerp(
-          controlsRef.target.clone(),
-          target,
-          500,
-          (current) => {
-            controlsRef.target.set(current.x, current.y, current.z);
-            controlsRef.update();
-          },
-          quinticEaseInOut
-        ).then(() => {
-          isCameraFocusing = false;
-        });
-      });
-    } else {
       await customLerp(
         controlsRef.target.clone(),
-        target,
-        1000,
+        new Vector3(0, 0, 0),
+        500,
         (current) => {
           controlsRef.target.set(current.x, current.y, current.z);
           controlsRef.update();
         },
         quinticEaseInOut
-      ).then(async () => {
-        await customLerp(
-          cameraRef.position.clone(),
-          position,
-          1500,
-          (current) => {
-            cameraRef.position.copy(current);
-            controlsRef.update();
-          },
-          quinticEaseInOut
-        ).then(() => {
-          isCameraFocusing = false;
-        });
+      ).then(() => {
+        isCameraFocusing = false;
       });
-    }
+    });
+  };
+
+  const changeCameraFocus = async (
+    target: Vector3,
+    position: Vector3,
+    onTarget?: () => void
+  ) => {
+    if (isCameraFocusing) return;
+    isCameraFocusing = true;
+
+    // Lerp from current camera target to new camera target
+    await customLerp(
+      controlsRef.target.clone(),
+      target,
+      1000,
+      (current) => {
+        controlsRef.target.set(current.x, current.y, current.z);
+        controlsRef.update();
+      },
+      quinticEaseInOut
+    ).then(async () => {
+      if (onTarget) onTarget();
+
+      // Lerp from current camera position to new camera position
+      await customLerp(
+        cameraRef.position.clone(),
+        position,
+        1500,
+        (current) => {
+          cameraRef.position.copy(current);
+          controlsRef.update();
+        },
+        quinticEaseInOut
+      ).then(() => {
+        isCameraFocusing = false;
+      });
+    });
   };
 
   onMount(() => {
@@ -162,8 +169,9 @@
   class="w-full h-[calc(100vh-4rem)] overflow-hidden bg-black"
   on:contextmenu|preventDefault={() => {
     selectedSystemId = null;
-    changeCameraFocus(new Vector3(0, 0, 0), new Vector3(750, 750, 0), true);
-    GalaxyStore.resetPositions();
+    resetCameraFocus(() => {
+      GalaxyStore.resetPositions();
+    });
   }}
 >
   <Canvas>
@@ -206,12 +214,13 @@
             );
             changeCameraFocus(
               systemPosition,
-              getCameraOrbitPosition(cameraRef.position, systemPosition)
-            ).then(() => {
-              if (lastSelectedSystemId === null) {
-                GalaxyStore.expandPositions(system[1].artist.id);
+              getCameraOrbitPosition(cameraRef.position, systemPosition),
+              () => {
+                if (lastSelectedSystemId === null) {
+                  GalaxyStore.expandPositions(system[1].artist.id);
+                }
               }
-            });
+            );
           }
         }}
       />
