@@ -168,8 +168,8 @@
 <div
   class="w-full h-[calc(100vh-4rem)] overflow-hidden bg-black"
   on:contextmenu|preventDefault={() => {
-    selectedSystemId = null;
     resetCameraFocus(() => {
+      selectedSystemId = null;
       GalaxyStore.resetPositions();
     });
   }}
