@@ -3,6 +3,7 @@
     getTopArtists,
     getRelatedArtists,
     getTopTracks,
+    getArtistTracks,
   } from '../../components/helpers/spotify';
   import { Canvas, OrbitControls, T } from '@threlte/core';
   import ArtistSystem from './ArtistSystem.svelte';
@@ -19,7 +20,7 @@
     const topArtists = await getTopArtists();
     await Promise.all(
       topArtists.items.map(async (artist) => {
-        GalaxyStore.addSystem(artist);
+        GalaxyStore.addSystem(artist, true);
 
         const relatedArtists = await getRelatedArtists(artist.id);
         relatedArtists.artists = relatedArtists.artists.filter(
@@ -27,7 +28,7 @@
         );
         // Change amount of related artists to add here
         relatedArtists.artists.slice(0, 20).map((relatedArtist) => {
-          GalaxyStore.addSystem(relatedArtist);
+          GalaxyStore.addSystem(relatedArtist, false);
         });
       })
     );
@@ -36,22 +37,9 @@
     topTracks.items.map((track) => {
       const artist = track.artists[0];
       if (GalaxyStore.containsSystem(artist.id)) {
-        GalaxyStore.addPlanet(track);
+        GalaxyStore.addPlanet(track, true);
       }
     });
-  };
-
-  const getCameraOrbitPosition = (cameraPos: Vector3, systemPos: Vector3) => {
-    // Calculate the direction vector
-    const directionVector = cameraPos
-      .clone()
-      .sub(systemPos)
-      .normalize()
-      .multiplyScalar(10);
-
-    // Calculate the new position
-    const newCameraPosition = systemPos.clone().add(directionVector);
-    return newCameraPosition;
   };
 
   const resetCameraFocus = async (onPosition?: () => void) => {
@@ -83,6 +71,21 @@
         isCameraFocusing = false;
       });
     });
+  };
+
+  const getCameraOrbitPosition = (cameraPos: Vector3, systemPos: Vector3) => {
+    const orbitDistance = 30;
+
+    // Calculate the direction vector
+    const directionVector = cameraPos
+      .clone()
+      .sub(systemPos)
+      .normalize()
+      .multiplyScalar(orbitDistance);
+
+    // Calculate the new position
+    const newCameraPosition = systemPos.clone().add(directionVector);
+    return newCameraPosition;
   };
 
   const changeCameraFocus = async (
@@ -185,14 +188,24 @@
               systemPosition,
               getCameraOrbitPosition(cameraRef.position, systemPosition),
               () => {
+                const selectSystem = () => {
+                  selectedSystemId = system[1].artist.id;
+
+                  if (system[1].planets.size === 0) {
+                    getArtistTracks(system[1].artist.id).then((tracks) => {
+                      tracks.tracks.map((track) => {
+                        GalaxyStore.addPlanet(track, false);
+                      });
+                    });
+                  }
+                };
+
                 if (selectedSystemId === null) {
                   GalaxyStore.expandPositions(system[1].artist.id, 250).then(
-                    () => {
-                      selectedSystemId = system[1].artist.id;
-                    }
+                    selectSystem
                   );
                 } else {
-                  selectedSystemId = system[1].artist.id;
+                  selectSystem();
                 }
               }
             );

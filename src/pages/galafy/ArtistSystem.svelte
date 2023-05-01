@@ -10,13 +10,13 @@
   export let artist: DetailedArtistItem;
   export let position: [number, number, number];
   export let color: string = '';
-  export let planets = new Map<
+  export let planets: Map<
     DetailedTrackItem['id'],
     {
       track: DetailedTrackItem;
       position: [number, number, number];
     }
-  >();
+  >;
   export let clickCallback: () => void = () => {};
   export let isSelected = false;
 

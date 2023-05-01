@@ -19,6 +19,7 @@ type PlanetMapType = Map<
   DetailedTrackItem['id'],
   {
     track: DetailedTrackItem;
+    is_top_track: boolean;
     position: PositionType;
   }
 >;
@@ -26,6 +27,7 @@ type SystemMapType = Map<
   DetailedArtistItem['id'],
   {
     artist: DetailedArtistItem;
+    is_top_artist: boolean;
     default_position: PositionType;
     position: PositionType;
     planets: PlanetMapType;
@@ -168,15 +170,21 @@ const createGalaxyStore = () => {
     subscribe,
     addSystem: (
       artist: DetailedArtistItem,
+      is_top_artist: boolean,
       tracks?: Array<DetailedTrackItem>
     ) =>
       update((state) => {
+        if (state.systems.has(artist.id)) {
+          return state;
+        }
+
         const randomPosition = getRandomPosition(
           state.systems.size,
           [...state.systems].map(([_, system]) => system.position)
         );
         const newSystem = {
           artist,
+          is_top_artist,
           default_position: randomPosition,
           position: randomPosition,
           planets: tracks
@@ -200,16 +208,21 @@ const createGalaxyStore = () => {
         state.systems.delete(artist_id);
         return state;
       }),
-    addPlanet: (track: DetailedTrackItem, position?: PositionType) =>
+    addPlanet: (
+      track: DetailedTrackItem,
+      is_top_track: boolean,
+      position?: PositionType
+    ) =>
       update((state) => {
         const system = state.systems.get(track.artists[0].id);
-        if (system !== undefined) {
-          system.planets.set(track.id, {
-            track,
-            position:
-              position ?? getPositionAroundStar(system.planets.size, 10),
-          });
+        if (system === undefined || system.planets.has(track.id)) {
+          return state;
         }
+        system.planets.set(track.id, {
+          track,
+          is_top_track,
+          position: position ?? getPositionAroundStar(system.planets.size, 10),
+        });
         return state;
       }),
     removePlanet: (track_id: string) =>
