@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import type { DetailedArtistItem, DetailedTrackItem } from '../helpers/spotify';
 import { Vector3 } from 'three';
+import { customLerp } from '../helpers/animation';
 
 const galaxyArms = 4;
 const galaxyScale = 1000;
@@ -236,51 +237,100 @@ const createGalaxyStore = () => {
       });
       return found !== undefined && found !== null;
     },
-    expandPositions: (artist_id: string) => {
-      update((state) => {
-        state.systems.forEach((system, id) => {
-          if (id !== artist_id && state.systems.get(artist_id) !== undefined) {
-            const systemPosition = new Vector3(
-              system.default_position[0],
-              system.default_position[1],
-              system.default_position[2]
-            );
+    expandPositions: (
+      artist_id: string,
+      time: number,
+      ease?: (t: number) => number
+    ) =>
+      new Promise<void>((resolve) => {
+        const lerpSteps = time >= 100 ? time / 5 : 20;
+        let counter = 0;
+        const interval = setInterval(() => {
+          update((state) => {
+            state.systems.forEach((system, id) => {
+              if (
+                id !== artist_id &&
+                state.systems.get(artist_id) !== undefined
+              ) {
+                const systemPosition = new Vector3(
+                  system.default_position[0],
+                  system.default_position[1],
+                  system.default_position[2]
+                );
 
-            // Calculate the direction vector from the selected system to the current system
-            const direction = systemPosition
-              .clone()
-              .sub(
-                new Vector3(
-                  state.systems.get(artist_id)!.default_position[0],
-                  state.systems.get(artist_id)!.default_position[1],
-                  state.systems.get(artist_id)!.default_position[2]
-                )
+                // Calculate the direction vector from the selected system to the current system
+                const direction = systemPosition
+                  .clone()
+                  .sub(
+                    new Vector3(
+                      state.systems.get(artist_id)!.default_position[0],
+                      state.systems.get(artist_id)!.default_position[1],
+                      state.systems.get(artist_id)!.default_position[2]
+                    )
+                  );
+
+                // Scale the direction vector by a factor (e.g., 2 for doubling the distance)
+                const scaleFactor = 5;
+                direction.multiplyScalar(scaleFactor);
+                const finalPosition = systemPosition.clone().add(direction);
+
+                // Calculate the new position of the current system
+                const t = ease
+                  ? ease(counter / lerpSteps)
+                  : counter / lerpSteps;
+                const newPosition = systemPosition
+                  .clone()
+                  .lerp(finalPosition, t);
+
+                // Update the position of the current system
+                system.position = [newPosition.x, newPosition.y, newPosition.z];
+              }
+            });
+
+            return state;
+          });
+          if (counter >= lerpSteps) {
+            clearInterval(interval);
+            resolve();
+          }
+          counter++;
+        }, time / lerpSteps);
+      }),
+    resetPositions: (time: number, ease?: (t: number) => number) =>
+      new Promise<void>((resolve) => {
+        const lerpSteps = time >= 100 ? time / 5 : 20;
+        let counter = 0;
+        const interval = setInterval(() => {
+          update((state) => {
+            state.systems.forEach((system) => {
+              const systemPosition = new Vector3(
+                system.position[0],
+                system.position[1],
+                system.position[2]
+              );
+              const defaultSystemPosition = new Vector3(
+                system.default_position[0],
+                system.default_position[1],
+                system.default_position[2]
               );
 
-            // Scale the direction vector by a factor (e.g., 2 for doubling the distance)
-            const scaleFactor = 5;
-            direction.multiplyScalar(scaleFactor);
+              const t = ease ? ease(counter / lerpSteps) : counter / lerpSteps;
+              const newPosition = systemPosition
+                .clone()
+                .lerp(defaultSystemPosition, t);
 
-            // Update the position of the current system
-            system.position = [
-              state.systems.get(artist_id)!.default_position[0] + direction.x,
-              state.systems.get(artist_id)!.default_position[1] + direction.y,
-              state.systems.get(artist_id)!.default_position[2] + direction.z,
-            ];
+              system.position = [newPosition.x, newPosition.y, newPosition.z];
+            });
+
+            return state;
+          });
+          if (counter >= lerpSteps) {
+            clearInterval(interval);
+            resolve();
           }
-        });
-
-        return state;
-      });
-    },
-    resetPositions: () => {
-      update((state) => {
-        state.systems.forEach((system) => {
-          system.position = system.default_position;
-        });
-        return state;
-      });
-    },
+          counter++;
+        }, time / lerpSteps);
+      }),
     update,
     clear: () => set(defaultGalaxyStore),
   };

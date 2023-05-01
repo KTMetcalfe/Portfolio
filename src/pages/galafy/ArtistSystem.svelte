@@ -48,21 +48,23 @@
     {/if}
   </T.Mesh>
   <!-- Surrounding song planets -->
-  {#each [...planets] as planet, i (planet[0])}
-    <T.Mesh position={planet[1].position} scale={scale * 0.5} let:ref>
-      <InteractiveObject object={ref} interactive />
-      <T.SphereGeometry args={[1, 32, 32]} />
-      {#if isSelected && planet[1].track.album.images.length > 0}
-        <T.MeshStandardMaterial
-          map={useTexture(planet[1].track.album.images[0].url)}
-        />
-      {:else if color !== ''}
-        <T.MeshStandardMaterial
-          color={new Color(`#${color.replace('#', '')}`)}
-        />
-      {:else}
-        <T.MeshStandardMaterial color={new Color('#666666')} />
-      {/if}
-    </T.Mesh>
-  {/each}
+  {#if isSelected}
+    {#each [...planets] as planet, i (planet[0])}
+      <T.Mesh position={planet[1].position} scale={scale * 0.5} let:ref>
+        <InteractiveObject object={ref} interactive />
+        <T.SphereGeometry args={[1, 32, 32]} />
+        {#if isSelected && planet[1].track.album.images.length > 0}
+          <T.MeshStandardMaterial
+            map={useTexture(planet[1].track.album.images[0].url)}
+          />
+        {:else if color !== ''}
+          <T.MeshStandardMaterial
+            color={new Color(`#${color.replace('#', '')}`)}
+          />
+        {:else}
+          <T.MeshStandardMaterial color={new Color('#666666')} />
+        {/if}
+      </T.Mesh>
+    {/each}
+  {/if}
 </T.Group>

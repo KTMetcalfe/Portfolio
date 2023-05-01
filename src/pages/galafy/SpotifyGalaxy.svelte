@@ -10,7 +10,10 @@
   import { GalaxyStore } from '../../components/stores/GalaxyStore';
   import { PerspectiveCamera, Vector3 } from 'three';
   import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls';
-  import { customLerp } from '../../components/helpers/animation';
+  import {
+    customLerp,
+    quinticEaseInOut,
+  } from '../../components/helpers/animation';
 
   const createArtistSystems = async () => {
     const topArtists = await getTopArtists();
@@ -49,14 +52,6 @@
     // Calculate the new position
     const newCameraPosition = systemPos.clone().add(directionVector);
     return newCameraPosition;
-  };
-
-  const quinticEaseInOut = (t: number) => {
-    if (t < 0.5) {
-      return 16 * t * t * t * t * t;
-    }
-    t = t - 1;
-    return 1 + 16 * t * t * t * t * t;
   };
 
   const resetCameraFocus = async (onPosition?: () => void) => {
@@ -139,8 +134,6 @@
 
   let isCameraFocusing = false;
   let selectedSystemId: string | null = null;
-
-  // TODO: Lerp the galaxy expansion
 </script>
 
 <div
@@ -148,7 +141,7 @@
   on:contextmenu|preventDefault={() => {
     resetCameraFocus(() => {
       selectedSystemId = null;
-      GalaxyStore.resetPositions();
+      GalaxyStore.resetPositions(200);
     });
   }}
 >
@@ -183,8 +176,6 @@
         planets={system[1].planets}
         clickCallback={() => {
           if (selectedSystemId !== system[1].artist.id && !isCameraFocusing) {
-            const lastSelectedSystemId = selectedSystemId;
-            selectedSystemId = system[1].artist.id;
             const systemPosition = new Vector3(
               system[1].position[0],
               system[1].position[1],
@@ -194,8 +185,14 @@
               systemPosition,
               getCameraOrbitPosition(cameraRef.position, systemPosition),
               () => {
-                if (lastSelectedSystemId === null) {
-                  GalaxyStore.expandPositions(system[1].artist.id);
+                if (selectedSystemId === null) {
+                  GalaxyStore.expandPositions(system[1].artist.id, 250).then(
+                    () => {
+                      selectedSystemId = system[1].artist.id;
+                    }
+                  );
+                } else {
+                  selectedSystemId = system[1].artist.id;
                 }
               }
             );

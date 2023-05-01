@@ -24,3 +24,11 @@ export const customLerp = (
       counter++;
     }, time / lerpSteps);
   });
+
+export const quinticEaseInOut = (t: number) => {
+  if (t < 0.5) {
+    return 16 * t * t * t * t * t;
+  }
+  t = t - 1;
+  return 1 + 16 * t * t * t * t * t;
+};
