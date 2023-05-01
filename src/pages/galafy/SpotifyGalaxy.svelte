@@ -140,7 +140,7 @@
 </script>
 
 <div
-  class="w-full h-[calc(100vh-4rem)] overflow-hidden bg-black"
+  class="w-full h-[calc(100vh-4rem)] overflow-hidden bg-slate-950"
   on:contextmenu|preventDefault={() => {
     resetCameraFocus(() => {
       selectedSystemId = null;
