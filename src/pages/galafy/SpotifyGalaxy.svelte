@@ -10,6 +10,7 @@
   import { GalaxyStore } from '../../components/stores/GalaxyStore';
   import { PerspectiveCamera, Vector3 } from 'three';
   import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls';
+  import { customLerp } from '../../components/helpers/animation';
 
   const createArtistSystems = async () => {
     const topArtists = await getTopArtists();
@@ -49,31 +50,6 @@
     const newCameraPosition = systemPos.clone().add(directionVector);
     return newCameraPosition;
   };
-
-  const customLerp = (
-    start: Vector3,
-    end: Vector3,
-    time: number,
-    onUpdate: (current: Vector3) => void,
-    ease?: (t: number) => number
-  ) =>
-    new Promise<Vector3>((res) => {
-      const lerpSteps = time >= 100 ? time / 5 : 20;
-
-      let counter = 1;
-      const interval = setInterval(() => {
-        const t = ease ? ease(counter / lerpSteps) : counter / lerpSteps;
-        const currentLerp = start.clone().lerp(end, t);
-
-        onUpdate(currentLerp);
-
-        if (counter >= lerpSteps) {
-          clearInterval(interval);
-          res(currentLerp);
-        }
-        counter++;
-      }, time / lerpSteps);
-    });
 
   const quinticEaseInOut = (t: number) => {
     if (t < 0.5) {
@@ -163,6 +139,8 @@
 
   let isCameraFocusing = false;
   let selectedSystemId: string | null = null;
+
+  // TODO: Lerp the galaxy expansion
 </script>
 
 <div
