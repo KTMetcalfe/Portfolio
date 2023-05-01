@@ -19,12 +19,20 @@
   >;
   export let clickCallback: () => void = () => {};
   export let isSelected = false;
+  export let isTopArtist = false;
 
   export let scale = 1;
   let scaleMultiple = tweened(1, { duration: 100 });
 </script>
 
 <T.Group {position}>
+  <!-- Identifier for top artist -->
+  {#if isTopArtist}
+    <T.Mesh position={[0, 5, 0]} scale={scale * 0.5} let:ref>
+      <T.SphereGeometry args={[1, 32, 32]} />
+      <T.MeshStandardMaterial color={new Color('#ff0000')} />
+    </T.Mesh>
+  {/if}
   <!-- Artist as sun -->
   <T.Mesh scale={scale * $scaleMultiple} let:ref>
     <InteractiveObject

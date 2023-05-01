@@ -166,13 +166,18 @@
       />
     </T.PerspectiveCamera>
 
-    <T.DirectionalLight castShadow position={[3, 10, 10]} />
-    <T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
+    <T.PointLight
+      position={[0, 0, 0]}
+      intensity={1}
+      distance={1000 * (selectedSystemId !== null ? 5 : 1)}
+      decay={2}
+    />
     <T.AmbientLight intensity={0.2} />
 
     {#each [...$GalaxyStore.systems] as system, i (system[0])}
       <ArtistSystem
         isSelected={selectedSystemId === system[1].artist.id}
+        isTopArtist={system[1].is_top_artist}
         color={system[1].color}
         artist={system[1].artist}
         position={system[1].position}
