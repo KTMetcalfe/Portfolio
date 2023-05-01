@@ -5,11 +5,17 @@
     getTopTracks,
     getArtistTracks,
   } from '../../components/helpers/spotify';
-  import { Canvas, OrbitControls, T } from '@threlte/core';
+  import { Canvas, InstancedMesh, OrbitControls, T } from '@threlte/core';
   import ArtistSystem from './ArtistSystem.svelte';
   import { onMount } from 'svelte';
   import { GalaxyStore } from '../../components/stores/GalaxyStore';
-  import { PerspectiveCamera, Vector3 } from 'three';
+  import {
+    MeshBasicMaterial,
+    MeshStandardMaterial,
+    PerspectiveCamera,
+    SphereGeometry,
+    Vector3,
+  } from 'three';
   import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls';
   import {
     customLerp,
@@ -126,7 +132,6 @@
   };
 
   onMount(() => {
-    createArtistSystems();
     return () => {
       GalaxyStore.clear();
     };
@@ -148,75 +153,108 @@
     });
   }}
 >
-  <Canvas>
-    <T.PerspectiveCamera
-      bind:ref={cameraRef}
-      makeDefault
-      fov={72}
-      position={[750, 750, 0]}
-    >
-      <OrbitControls
-        bind:controls={controlsRef}
-        enablePan={false}
-        target={{
-          x: 0,
-          y: 0,
-          z: 0,
-        }}
+  {#await createArtistSystems()}
+    <div class="w-full h-full flex justify-center items-center">
+      <h1 class="text-2xl">Loading galaxy...</h1>
+    </div>
+  {:then}
+    <Canvas>
+      <T.PerspectiveCamera
+        bind:ref={cameraRef}
+        makeDefault
+        fov={72}
+        position={[750, 750, 0]}
+      >
+        <OrbitControls
+          bind:controls={controlsRef}
+          enablePan={false}
+          target={{
+            x: 0,
+            y: 0,
+            z: 0,
+          }}
+        />
+      </T.PerspectiveCamera>
+
+      <T.PointLight
+        position={[0, 0, 0]}
+        intensity={1}
+        distance={1000 * (selectedSystemId !== null ? 5 : 1)}
+        decay={2}
       />
-    </T.PerspectiveCamera>
+      <T.AmbientLight intensity={0.2} />
 
-    <T.PointLight
-      position={[0, 0, 0]}
-      intensity={1}
-      distance={1000 * (selectedSystemId !== null ? 5 : 1)}
-      decay={2}
-    />
-    <T.AmbientLight intensity={0.2} />
-
-    {#each [...$GalaxyStore.systems] as system, i (system[0])}
-      <ArtistSystem
-        isSelected={selectedSystemId === system[1].artist.id}
-        isTopArtist={system[1].is_top_artist}
-        color={system[1].color}
-        artist={system[1].artist}
-        position={system[1].position}
-        planets={system[1].planets}
-        clickCallback={() => {
-          if (selectedSystemId !== system[1].artist.id && !isCameraFocusing) {
-            const systemPosition = new Vector3(
-              system[1].position[0],
-              system[1].position[1],
-              system[1].position[2]
-            );
-            changeCameraFocus(
-              systemPosition,
-              getCameraOrbitPosition(cameraRef.position, systemPosition),
-              () => {
-                const selectSystem = () => {
-                  selectedSystemId = system[1].artist.id;
-
-                  if (system[1].planets.size === 0) {
-                    getArtistTracks(system[1].artist.id).then((tracks) => {
-                      tracks.tracks.map((track) => {
-                        GalaxyStore.addPlanet(track, false);
-                      });
-                    });
-                  }
-                };
-
-                if (selectedSystemId === null) {
-                  GalaxyStore.expandPositions(system[1].artist.id, 250).then(
-                    selectSystem
+      <InstancedMesh
+        id="selector"
+        geometry={new SphereGeometry(1, 32, 32)}
+        material={new MeshBasicMaterial({
+          transparent: true,
+          opacity: 0,
+        })}
+        interactive
+      >
+        <InstancedMesh
+          id="star"
+          geometry={new SphereGeometry(1, 32, 32)}
+          material={new MeshStandardMaterial()}
+        >
+          {#each [...$GalaxyStore.systems] as system, i (system[0])}
+            <ArtistSystem
+              isSelected={selectedSystemId === system[1].artist.id}
+              isTopArtist={system[1].is_top_artist}
+              color={system[1].color}
+              artist={system[1].artist}
+              position={system[1].position}
+              planets={system[1].planets}
+              clickCallback={() => {
+                if (
+                  selectedSystemId !== system[1].artist.id &&
+                  !isCameraFocusing
+                ) {
+                  const systemPosition = new Vector3(
+                    system[1].position[0],
+                    system[1].position[1],
+                    system[1].position[2]
                   );
-                } else {
-                  selectSystem();
+                  changeCameraFocus(
+                    systemPosition,
+                    getCameraOrbitPosition(cameraRef.position, systemPosition),
+                    () => {
+                      const selectSystem = () => {
+                        selectedSystemId = system[1].artist.id;
+
+                        // TODO: Check if system has enough planets
+                        if (system[1].planets.size < 5) {
+                          getArtistTracks(system[1].artist.id).then(
+                            (tracks) => {
+                              tracks.tracks.map((track) => {
+                                GalaxyStore.addPlanet(
+                                  track,
+                                  false,
+                                  system[1].artist.id
+                                );
+                              });
+                            }
+                          );
+                        }
+                      };
+
+                      if (selectedSystemId === null) {
+                        GalaxyStore.expandPositions(
+                          system[1].artist.id,
+                          250
+                        ).then(selectSystem);
+                      } else {
+                        selectSystem();
+                      }
+                    }
+                  );
                 }
-              }
-            );
-          }
-        }}
-      />
-    {/each}
-  </Canvas>
+              }}
+            />
+          {/each}
+        </InstancedMesh>
+      </InstancedMesh>
+    </Canvas>
+  {/await}
 </div>
