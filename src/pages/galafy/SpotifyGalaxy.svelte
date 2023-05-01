@@ -5,11 +5,17 @@
     getTopTracks,
     getArtistTracks,
   } from '../../components/helpers/spotify';
-  import { Canvas, OrbitControls, T } from '@threlte/core';
+  import { Canvas, InstancedMesh, OrbitControls, T } from '@threlte/core';
   import ArtistSystem from './ArtistSystem.svelte';
   import { onMount } from 'svelte';
   import { GalaxyStore } from '../../components/stores/GalaxyStore';
-  import { PerspectiveCamera, Vector3 } from 'three';
+  import {
+    Color,
+    MeshStandardMaterial,
+    PerspectiveCamera,
+    SphereGeometry,
+    Vector3,
+  } from 'three';
   import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls';
   import {
     customLerp,
@@ -174,49 +180,66 @@
     />
     <T.AmbientLight intensity={0.2} />
 
-    {#each [...$GalaxyStore.systems] as system, i (system[0])}
-      <ArtistSystem
-        isSelected={selectedSystemId === system[1].artist.id}
-        isTopArtist={system[1].is_top_artist}
-        color={system[1].color}
-        artist={system[1].artist}
-        position={system[1].position}
-        planets={system[1].planets}
-        clickCallback={() => {
-          if (selectedSystemId !== system[1].artist.id && !isCameraFocusing) {
-            const systemPosition = new Vector3(
-              system[1].position[0],
-              system[1].position[1],
-              system[1].position[2]
-            );
-            changeCameraFocus(
-              systemPosition,
-              getCameraOrbitPosition(cameraRef.position, systemPosition),
-              () => {
-                const selectSystem = () => {
-                  selectedSystemId = system[1].artist.id;
+    <InstancedMesh
+      id="star"
+      interactive
+      geometry={new SphereGeometry(1, 32, 32)}
+      material={new MeshStandardMaterial()}
+    >
+      <InstancedMesh
+        id="planet"
+        geometry={new SphereGeometry(1, 32, 32)}
+        material={new MeshStandardMaterial()}
+      >
+        {#each [...$GalaxyStore.systems] as system, i (system[0])}
+          <ArtistSystem
+            isSelected={selectedSystemId === system[1].artist.id}
+            isTopArtist={system[1].is_top_artist}
+            color={system[1].color}
+            artist={system[1].artist}
+            position={system[1].position}
+            planets={system[1].planets}
+            clickCallback={() => {
+              if (
+                selectedSystemId !== system[1].artist.id &&
+                !isCameraFocusing
+              ) {
+                const systemPosition = new Vector3(
+                  system[1].position[0],
+                  system[1].position[1],
+                  system[1].position[2]
+                );
+                changeCameraFocus(
+                  systemPosition,
+                  getCameraOrbitPosition(cameraRef.position, systemPosition),
+                  () => {
+                    const selectSystem = () => {
+                      selectedSystemId = system[1].artist.id;
 
-                  if (system[1].planets.size === 0) {
-                    getArtistTracks(system[1].artist.id).then((tracks) => {
-                      tracks.tracks.map((track) => {
-                        GalaxyStore.addPlanet(track, false);
-                      });
-                    });
+                      if (system[1].planets.size === 0) {
+                        getArtistTracks(system[1].artist.id).then((tracks) => {
+                          tracks.tracks.map((track) => {
+                            GalaxyStore.addPlanet(track, false);
+                          });
+                        });
+                      }
+                    };
+
+                    if (selectedSystemId === null) {
+                      GalaxyStore.expandPositions(
+                        system[1].artist.id,
+                        250
+                      ).then(selectSystem);
+                    } else {
+                      selectSystem();
+                    }
                   }
-                };
-
-                if (selectedSystemId === null) {
-                  GalaxyStore.expandPositions(system[1].artist.id, 250).then(
-                    selectSystem
-                  );
-                } else {
-                  selectSystem();
-                }
+                );
               }
-            );
-          }
-        }}
-      />
-    {/each}
+            }}
+          />
+        {/each}
+      </InstancedMesh>
+    </InstancedMesh>
   </Canvas>
 </div>

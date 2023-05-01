@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { T, InteractiveObject, useTexture } from '@threlte/core';
+  import { T, InteractiveObject, useTexture, Instance } from '@threlte/core';
   import type {
     DetailedArtistItem,
     DetailedTrackItem,
   } from '../../components/helpers/spotify';
-  import { Color } from 'three';
+  import { Color, Vector3 } from 'three';
   import { tweened } from 'svelte/motion';
 
   export let artist: DetailedArtistItem;
@@ -34,33 +34,31 @@
     </T.Mesh>
   {/if}
   <!-- Artist as sun -->
-  <T.Mesh scale={scale * $scaleMultiple} let:ref>
-    <InteractiveObject
-      object={ref}
-      interactive
-      on:pointerenter={() => {
-        $scaleMultiple = 1.5;
-      }}
-      on:pointerleave={() => {
-        $scaleMultiple = 1;
-      }}
-      on:click={clickCallback}
-    />
-    <T.SphereGeometry args={[1, 32, 32]} />
+  <Instance
+    id="star"
+    scale={scale * $scaleMultiple}
+    on:pointerenter={() => {
+      $scaleMultiple = 1.5;
+    }}
+    on:pointerleave={() => {
+      $scaleMultiple = 1;
+    }}
+    on:click={clickCallback}
+  >
     {#if isSelected && artist.images.length > 0}
       <T.MeshStandardMaterial map={useTexture(artist.images[0].url)} />
     {:else if color !== ''}
       <T.MeshStandardMaterial color={new Color(`#${color.replace('#', '')}`)} />
-    {:else}
-      <T.MeshStandardMaterial color={new Color('#666666')} />
     {/if}
-  </T.Mesh>
+  </Instance>
   <!-- Surrounding song planets -->
   {#if isSelected}
     {#each [...planets] as planet, i (planet[0])}
-      <T.Mesh position={planet[1].position} scale={scale * 0.5} let:ref>
-        <InteractiveObject object={ref} interactive />
-        <T.SphereGeometry args={[1, 32, 32]} />
+      <Instance
+        id="planet"
+        position={new Vector3(...planet[1].position)}
+        scale={scale * 0.5}
+      >
         {#if isSelected && planet[1].track.album.images.length > 0}
           <T.MeshStandardMaterial
             map={useTexture(planet[1].track.album.images[0].url)}
@@ -72,7 +70,7 @@
         {:else}
           <T.MeshStandardMaterial color={new Color('#666666')} />
         {/if}
-      </T.Mesh>
+      </Instance>
     {/each}
   {/if}
 </T.Group>
