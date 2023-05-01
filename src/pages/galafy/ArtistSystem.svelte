@@ -33,19 +33,24 @@
       <T.MeshStandardMaterial color={new Color('#ff0000')} />
     </T.Mesh>
   {/if}
-  <!-- Artist as sun -->
-  <T.Mesh scale={scale * $scaleMultiple} let:ref>
+  <T.Mesh scale={scale * (isSelected ? 1 : 10)} let:ref>
     <InteractiveObject
       object={ref}
       interactive
       on:pointerenter={() => {
-        $scaleMultiple = 1.5;
+        if (!isSelected) $scaleMultiple = 10;
       }}
       on:pointerleave={() => {
         $scaleMultiple = 1;
       }}
       on:click={clickCallback}
     />
+    <T.SphereGeometry args={[1, 32, 32]} />
+    <T.MeshStandardMaterial transparent opacity={0} />
+  </T.Mesh>
+  <!-- Artist as sun -->
+  <T.Mesh scale={scale * $scaleMultiple} let:ref>
+    <InteractiveObject object={ref} interactive on:click={clickCallback} />
     <T.SphereGeometry args={[1, 32, 32]} />
     {#if isSelected && artist.images.length > 0}
       <T.MeshStandardMaterial map={useTexture(artist.images[0].url)} />
