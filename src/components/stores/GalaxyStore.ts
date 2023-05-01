@@ -211,10 +211,11 @@ const createGalaxyStore = () => {
     addPlanet: (
       track: DetailedTrackItem,
       is_top_track: boolean,
+      artist_id?: string,
       position?: PositionType
     ) =>
       update((state) => {
-        const system = state.systems.get(track.artists[0].id);
+        const system = state.systems.get(artist_id || track.artists[0].id);
         if (system === undefined || system.planets.has(track.id)) {
           return state;
         }
@@ -345,7 +346,11 @@ const createGalaxyStore = () => {
         }, time / lerpSteps);
       }),
     update,
-    clear: () => set(defaultGalaxyStore),
+    clear: () => {
+      set({
+        systems: new Map(),
+      });
+    },
   };
 };
 
