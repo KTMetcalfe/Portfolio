@@ -1,6 +1,6 @@
 <script lang="ts">
   import { T, useTexture, InteractiveObject } from '@threlte/core';
-  import type { Mesh, Vector3 } from 'three';
+  import { Mesh, Vector3 } from 'three';
 
   import sunImg from '../../images/2k_sun.jpg';
   import mercuryImg from '../../images/2k_mercury.jpg';
@@ -55,8 +55,15 @@
   }
 </script>
 
-<T.Mesh position={[0, 0, -distance]} let:ref={planetRef}>
-  <AnimationObject {size} {speed} {rotation} {planetRef} bind:textLookAt />
+<T.Mesh let:ref={planetRef}>
+  <AnimationObject
+    initialPosition={new Vector3(0, 0, -distance)}
+    {size}
+    {speed}
+    {rotation}
+    planetRef={planetRef}
+    bind:textLookAt
+  />
   {#if name !== 'Sun'}
     <InteractiveObject
       object={planetRef}

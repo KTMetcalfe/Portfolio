@@ -1,8 +1,10 @@
 <script lang="ts">
   import { T, useFrame } from '@threlte/core';
-  import { Euler, MathUtils, Mesh, Vector3 } from 'three';
+  import { Clock, Euler, MathUtils, Mesh, Vector3 } from 'three';
   import { SolStore } from '../../components/stores/SolStore';
+  import { onMount } from 'svelte';
 
+  export let initialPosition: Vector3;
   export let size: number;
   export let speed: number;
   export let rotation: number;
@@ -10,16 +12,22 @@
   export let planetRef: Mesh;
   export let textLookAt: Vector3;
 
+  const clock = new Clock();
+  let currentRotationSpeed = 0;
+
   // Updates object every frame
   useFrame(
     () => {
+      const elapsedTime = clock.getElapsedTime();
+      currentRotationSpeed = speed === 0 ? 0 : 360 / speed / 60;
       const eu = new Euler(
         MathUtils.degToRad(0),
-        MathUtils.degToRad(speed === 0 ? 0 : 360 / speed / 60),
+        MathUtils.degToRad(elapsedTime * currentRotationSpeed),
         MathUtils.degToRad(0)
       );
 
-      const offset = planetRef.position.applyEuler(eu);
+      const offset = initialPosition.applyEuler(eu);
+      planetRef.position.copy(offset);
 
       if (
         $SolStore.selected.ref !== null &&
