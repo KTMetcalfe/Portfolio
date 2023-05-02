@@ -1,6 +1,5 @@
 <script lang="ts">
   import { T, useTexture, InteractiveObject } from '@threlte/core';
-  import { Mesh, Vector3 } from 'three';
 
   import sunImg from '../../images/2k_sun.jpg';
   import mercuryImg from '../../images/2k_mercury.jpg';
@@ -11,13 +10,12 @@
   import saturnImg from '../../images/2k_saturn.jpg';
   import uranusImg from '../../images/2k_uranus.jpg';
   import neptuneImg from '../../images/2k_neptune.jpg';
-  import AnimationObject from './AnimationObject.svelte';
   import { SolStore } from '../../components/stores/SolStore';
+  import type { Vector3 } from 'three';
 
-  export let distance: number;
+  export let position: Vector3;
   export let size: number;
-  export let speed: number;
-  export let rotation: number;
+  export let rotation: Vector3;
   export let name: string;
 
   let textLookAt: Vector3;
@@ -55,20 +53,16 @@
   }
 </script>
 
-<T.Mesh let:ref={planetRef}>
-  <AnimationObject
-    initialPosition={new Vector3(0, 0, -distance)}
-    {size}
-    {speed}
-    {rotation}
-    planetRef={planetRef}
-    bind:textLookAt
-  />
+<T.Mesh
+  position={[position.x, position.y, position.z]}
+  rotation={[rotation.x, rotation.y, rotation.z]}
+  let:ref={planetRef}
+>
   {#if name !== 'Sun'}
     <InteractiveObject
       object={planetRef}
       interactive
-      on:click={() => SolStore.select(name, planetRef, true)}
+      on:click={() => SolStore.select(name, true)}
     />
   {/if}
   <!-- {#if name !== 'Sun' && !isSelected}
