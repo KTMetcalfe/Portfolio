@@ -95,7 +95,7 @@
   bind:ref={cameraRef}
   makeDefault
   fov={72}
-  position={[50, 50, 0]}
+  position={[50, 50, 50]}
 >
   <OrbitControls
     bind:controls={controlsRef}

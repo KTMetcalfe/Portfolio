@@ -27,7 +27,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
   [
     'Sun',
     {
-      position: new Vector3(0, 0, 0 * earthDist),
+      position: new Vector3(0, 0, -0 * earthDist),
       rotation: new Vector3(0, 0, 0),
       size: 20 * earthSize,
       orbitRatio: 0,
@@ -37,7 +37,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
   [
     'Mercury',
     {
-      position: new Vector3(0, 0, 0.39 * earthDist),
+      position: new Vector3(0, 0, -0.39 * earthDist),
       rotation: new Vector3(0, 0, 0),
       size: 0.38 * earthSize,
       orbitRatio: 0.62,
@@ -47,7 +47,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
   [
     'Venus',
     {
-      position: new Vector3(0, 0, 0.72 * earthDist),
+      position: new Vector3(0, 0, -0.72 * earthDist),
       rotation: new Vector3(0, 0, 0),
       size: 0.95 * earthSize,
       orbitRatio: 0.24,
@@ -57,7 +57,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
   [
     'Earth',
     {
-      position: new Vector3(0, 0, 1 * earthDist),
+      position: new Vector3(0, 0, -1 * earthDist),
       rotation: new Vector3(0, 0, 0),
       size: 1 * earthSize,
       orbitRatio: 1,
@@ -67,7 +67,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
   [
     'Mars',
     {
-      position: new Vector3(0, 0, (1.52 * earthDist) / 1.25),
+      position: new Vector3(0, 0, -(1.52 * earthDist) / 1.25),
       rotation: new Vector3(0, 0, 0),
       size: 0.53 * earthSize,
       orbitRatio: 1.88,
@@ -77,7 +77,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
   [
     'Jupiter',
     {
-      position: new Vector3(0, 0, (5.2 * earthDist) / 3),
+      position: new Vector3(0, 0, -(5.2 * earthDist) / 3),
       rotation: new Vector3(0, 0, 0),
       size: 10.97 * earthSize,
       orbitRatio: 11.86,
@@ -87,7 +87,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
   [
     'Saturn',
     {
-      position: new Vector3(0, 0, (9.54 * earthDist) / 4),
+      position: new Vector3(0, 0, -(9.54 * earthDist) / 4),
       rotation: new Vector3(0, 0, 0),
       size: 9.14 * earthSize,
       orbitRatio: 29.46,
@@ -97,7 +97,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
   [
     'Uranus',
     {
-      position: new Vector3(0, 0, (19.18 * earthDist) / 6),
+      position: new Vector3(0, 0, -(19.18 * earthDist) / 6),
       rotation: new Vector3(0, 0, 0),
       size: 3.98 * earthSize,
       orbitRatio: 164.79,
@@ -107,7 +107,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
   [
     'Neptune',
     {
-      position: new Vector3(0, 0, (30.06 * earthDist) / 8),
+      position: new Vector3(0, 0, -(30.06 * earthDist) / 8),
       rotation: new Vector3(0, 0, 0),
       size: 3.86 * earthSize,
       orbitRatio: 248.59,
