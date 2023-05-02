@@ -21,8 +21,9 @@
   export let selectedRef: Mesh | null;
   export let clickCallback: (mesh: Mesh) => void;
 
-  let planetRef: Mesh;
+  console.log('Planet', name, 'isSelected', isSelected, 'selectedRef', selectedRef, size, distance, speed, rotation);
 
+  let planetRef: Mesh;
   let textLookAt: Vector3;
 
   // Updates object every frame
@@ -94,7 +95,7 @@
   }
 </script>
 
-<T.Mesh position={[0, 0, -distance]} bind:ref={planetRef}>
+<T.Mesh position={[0, 0, -distance]} let:ref={planetRef}>
   <InteractiveObject
     object={planetRef}
     interactive
@@ -110,7 +111,7 @@
       {name}
     </Text>
   {/if} -->
-  <T.SphereGeometry />
+  <T.SphereGeometry args={[size]} />
   {#if map != null}
     <T.MeshStandardMaterial map={useTexture(map)} />
   {:else}
