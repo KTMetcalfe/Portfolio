@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { T, useFrame, useTexture, InteractiveObject } from '@threlte/core';
-  import { Euler, MathUtils, Mesh, Vector3 } from 'three';
+  import { T, useTexture, InteractiveObject } from '@threlte/core';
+  import type { Mesh, Vector3 } from 'three';
 
   import sunImg from '../../images/2k_sun.jpg';
   import mercuryImg from '../../images/2k_mercury.jpg';
@@ -11,6 +11,7 @@
   import saturnImg from '../../images/2k_saturn.jpg';
   import uranusImg from '../../images/2k_uranus.jpg';
   import neptuneImg from '../../images/2k_neptune.jpg';
+  import AnimationObject from './AnimationObject.svelte';
 
   export let distance: number;
   export let size: number;
@@ -21,46 +22,7 @@
   export let selectedRef: Mesh | null;
   export let clickCallback: (mesh: Mesh) => void;
 
-  console.log('Planet', name, 'isSelected', isSelected, 'selectedRef', selectedRef, size, distance, speed, rotation);
-
-  let planetRef: Mesh;
   let textLookAt: Vector3;
-
-  // Updates object every frame
-  useFrame(() => {
-    const eu = new Euler(
-      MathUtils.degToRad(0),
-      MathUtils.degToRad(speed === 0 ? 0 : 360 / speed / 60),
-      MathUtils.degToRad(0)
-    );
-
-    const offset = planetRef.position.applyEuler(eu);
-
-    if (selectedRef !== null && selectedRef.geometry.boundingSphere !== null) {
-      const goodPos = new Vector3(
-        selectedRef.position.x,
-        selectedRef.position.y +
-          2 * (selectedRef.geometry.boundingSphere?.radius || 1),
-        selectedRef.position.z
-      ).multiplyScalar(
-        1 +
-          5 *
-            ((selectedRef.geometry.boundingSphere?.radius || 1) /
-              selectedRef.position.distanceTo(new Vector3(0, 0, 0)))
-      );
-      textLookAt = goodPos;
-    } else {
-      textLookAt = new Vector3(0, offset.y + size * 2, 0);
-    }
-
-    planetRef.rotation.set(
-      planetRef.rotation.x,
-      (planetRef.rotation.y += MathUtils.degToRad(360 / rotation)),
-      planetRef.rotation.z
-    );
-  }, {
-    autostart: false,
-  });
 
   // Chooses appropriate planet texture
   let map: string | null = null;
@@ -96,11 +58,21 @@
 </script>
 
 <T.Mesh position={[0, 0, -distance]} let:ref={planetRef}>
-  <InteractiveObject
-    object={planetRef}
-    interactive
-    on:click={() => clickCallback(planetRef)}
+  <AnimationObject
+    {size}
+    {speed}
+    {rotation}
+    {selectedRef}
+    {planetRef}
+    bind:textLookAt
   />
+  {#if name !== 'Sun'}
+    <InteractiveObject
+      object={planetRef}
+      interactive
+      on:click={() => clickCallback(planetRef)}
+    />
+  {/if}
   <!-- {#if name !== 'Sun' && !isSelected}
     <Text
       position={new Vector3(0, size + 5, 0)}

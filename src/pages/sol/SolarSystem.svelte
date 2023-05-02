@@ -7,9 +7,10 @@
   export let secPerYear: number;
   export let selectedRef: Mesh | null;
   export let shouldLerp: boolean;
+  export let selectedName: string;
 
   // Seconds (60 frames) per year (1 earth revolution)
-  const revTime = secPerYear;
+  $: revTime = secPerYear;
 
   // Constants for comparison
   const earthDist = 100;
@@ -17,6 +18,74 @@
 
   let cameraRef: PerspectiveCamera;
   let controlsRef: OrbitControlsType;
+
+
+  // Distance is SCALED DOWN for the last five planets
+  $: planets = [
+    {
+      name: 'Sun',
+      distance: 0,
+      size: 20 * earthSize,
+      speed: 0,
+      rotation: revTime * 27,
+    },
+    {
+      name: 'Mercury',
+      distance: 0.39 * earthDist,
+      size: 0.38 * earthSize,
+      speed: revTime * 0.62,
+      rotation: revTime * 58.67,
+    },
+    {
+      name: 'Venus',
+      distance: 0.72 * earthDist,
+      size: 0.95 * earthSize,
+      speed: revTime * 0.24,
+      rotation: revTime * 243.02,
+    },
+    {
+      name: 'Earth',
+      distance: earthDist,
+      size: earthSize,
+      speed: revTime,
+      rotation: revTime * 0.99,
+    },
+    {
+      name: 'Mars',
+      distance: 1.52 * earthDist,
+      size: 0.53 * earthSize,
+      speed: revTime * 1.88,
+      rotation: revTime * 1.02,
+    },
+    {
+      name: 'Jupiter',
+      distance: 5.2 * earthDist,
+      size: 10.97 * earthSize,
+      speed: revTime * 11.86,
+      rotation: revTime * 0.42,
+    },
+    {
+      name: 'Saturn',
+      distance: 9.54 * earthDist,
+      size: 9.14 * earthSize,
+      speed: revTime * 29.46,
+      rotation: revTime * 0.45,
+    },
+    {
+      name: 'Uranus',
+      distance: (19.18 * earthDist) / 6,
+      size: 3.98 * earthSize,
+      speed: revTime * 164.79,
+      rotation: revTime * 0.72,
+    },
+    {
+      name: 'Neptune',
+      distance: (30.06 * earthDist) / 8,
+      size: 3.86 * earthSize,
+      speed: revTime * 248.59,
+      rotation: revTime * 0.67,
+    },
+  ];
 
   useFrame(
     () => {
@@ -58,7 +127,7 @@
       // }
     },
     {
-      autostart: false,
+      autostart: true,
     }
   );
 </script>
@@ -80,121 +149,19 @@
 <T.AmbientLight intensity={0.25} />
 <T.PointLight intensity={2} />
 
-<Planet
-  distance={0}
-  size={20 * earthSize}
-  speed={0}
-  rotation={revTime * 27}
-  name="Sun"
-  isSelected={false}
-  {selectedRef}
-  clickCallback={(mesh) => {
-    selectedRef = mesh;
-    shouldLerp = true;
-  }}
-/>
-<Planet
-  distance={0.39 * earthDist}
-  size={0.38 * earthSize}
-  speed={revTime / 0.62}
-  rotation={revTime * 58.67}
-  name="Mercury"
-  isSelected={false}
-  {selectedRef}
-  clickCallback={(mesh) => {
-    selectedRef = mesh;
-    shouldLerp = true;
-  }}
-/>
-<Planet
-  distance={0.72 * earthDist}
-  size={0.95 * earthSize}
-  speed={revTime / 0.24}
-  rotation={revTime * 243.02}
-  name="Venus"
-  isSelected={false}
-  {selectedRef}
-  clickCallback={(mesh) => {
-    selectedRef = mesh;
-    shouldLerp = true;
-  }}
-/>
-<Planet
-  distance={earthDist}
-  size={earthSize}
-  speed={revTime}
-  rotation={revTime * 0.99}
-  name="Earth"
-  isSelected={false}
-  {selectedRef}
-  clickCallback={(mesh) => {
-    selectedRef = mesh;
-    shouldLerp = true;
-  }}
-/>
-<!-- Distance is SCALED DOWN for the last five planets -->
-<Planet
-  distance={(1.52 * earthDist) / 1.25}
-  size={0.53 * earthSize}
-  speed={revTime / 1.88}
-  rotation={revTime * 1.02}
-  name="Mars"
-  isSelected={false}
-  {selectedRef}
-  clickCallback={(mesh) => {
-    selectedRef = mesh;
-    shouldLerp = true;
-  }}
-/>
-<Planet
-  distance={(5.2 * earthDist) / 3}
-  size={10.97 * earthSize}
-  speed={revTime / 11.86}
-  rotation={revTime * 0.42}
-  name="Jupiter"
-  isSelected={false}
-  {selectedRef}
-  clickCallback={(mesh) => {
-    selectedRef = mesh;
-    shouldLerp = true;
-  }}
-/>
-<Planet
-  distance={(9.54 * earthDist) / 4}
-  size={9.14 * earthSize}
-  speed={revTime / 29.46}
-  rotation={revTime * 0.44}
-  name="Saturn"
-  isSelected={false}
-  {selectedRef}
-  clickCallback={(mesh) => {
-    selectedRef = mesh;
-    shouldLerp = true;
-  }}
-/>
-<Planet
-  distance={(19.18 * earthDist) / 6}
-  size={3.98 * earthSize}
-  speed={revTime / 164.79}
-  rotation={revTime * 0.72}
-  name="Uranus"
-  isSelected={false}
-  {selectedRef}
-  clickCallback={(mesh) => {
-    selectedRef = mesh;
-    shouldLerp = true;
-  }}
-/>
-<Planet
-  distance={(30.06 * earthDist) / 8}
-  size={3.86 * earthSize}
-  speed={revTime / 248.59}
-  rotation={revTime * 0.67}
-  name="Neptune"
-  isSelected={false}
-  {selectedRef}
-  clickCallback={(mesh) => {
-    selectedRef = mesh;
-    shouldLerp = true;
-  }}
-/>
+{#each planets as planet, i (planet.name)}
+  <Planet
+    distance={planet.distance}
+    size={planet.size}
+    speed={planet.speed}
+    rotation={planet.rotation}
+    name={planet.name}
+    isSelected={planet.name === selectedName}
+    {selectedRef}
+    clickCallback={(mesh) => {
+      selectedName = planet.name;
+      selectedRef = mesh;
+      shouldLerp = true;
+    }}
+  />
+{/each}
