@@ -1,36 +1,20 @@
 <script lang="ts">
   import { Canvas } from '@threlte/core';
-  import type { Mesh } from 'three';
   import SolarSystem from './SolarSystem.svelte';
-
-  let secPerYear = 365;
-  let selectedRef: Mesh | null = null;
-  let shouldLerp = false;
-  let selectedName = '';
-
-  const clearSelection = () => {
-    selectedName = '';
-    selectedRef = null;
-    shouldLerp = true;
-  };
+  import { SolStore } from '../../components/stores/SolStore';
 </script>
 
 <div>
   <div
     class="w-full h-[calc(100vh-4rem)] overflow-hidden bg-black"
     on:contextmenu|preventDefault={() => {
-      if (selectedRef !== null && !shouldLerp) {
-        clearSelection();
+      if ($SolStore.selected.ref !== null && !$SolStore.selected.shouldLerp) {
+        SolStore.deselect();
       }
     }}
   >
     <Canvas>
-      <SolarSystem
-        bind:shouldLerp
-        bind:selectedRef
-        {secPerYear}
-        {selectedName}
-      />
+      <SolarSystem />
     </Canvas>
   </div>
   <div class="p-4 flex gap-2 fixed top-16">
@@ -45,19 +29,17 @@
           <option value={"Uranus"}>Uranus</option>
           <option value={"Neptune"}>Neptune</option>
         </select> -->
-    <button disabled={shouldLerp} on:click={() => clearSelection()}
-      >Deselect</button
+    <button
+      disabled={$SolStore.selected.shouldLerp}
+      on:click={() => SolStore.deselect()}>Deselect</button
     >
     <input
       type="range"
       min={1}
       max={1825}
-      value={secPerYear}
+      bind:value={$SolStore.secPerYear}
       step={1}
       list="steplist"
-      on:input={(e) => {
-        secPerYear = Number(e.currentTarget.value);
-      }}
     />
     <datalist id="steplist">
       <option>1</option>
@@ -68,15 +50,15 @@
       <option>1825</option>
     </datalist>
     <p>
-      {secPerYear === 31536000
+      {$SolStore.secPerYear === 31536000
         ? '(1 second = 1 second)'
-        : secPerYear === 365
+        : $SolStore.secPerYear === 365
         ? '(1 second = 1 day)'
-        : (365 / secPerYear).toFixed(2)}x
+        : (365 / $SolStore.secPerYear).toFixed(2)}x
     </p>
     <button
-      disabled={secPerYear === 31536000}
-      on:click={() => (secPerYear = 31536000)}>Realtime</button
+      disabled={$SolStore.secPerYear === 31536000}
+      on:click={() => ($SolStore.secPerYear = 31536000)}>Realtime</button
     >
   </div>
 </div>

@@ -1,16 +1,12 @@
 <script lang="ts">
   import { T, useFrame, OrbitControls } from '@threlte/core';
   import Planet from './Planet.svelte';
-  import { type Mesh, type PerspectiveCamera, Vector3 } from 'three';
+  import { type PerspectiveCamera, Vector3 } from 'three';
   import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls';
-
-  export let secPerYear: number;
-  export let selectedRef: Mesh | null;
-  export let shouldLerp: boolean;
-  export let selectedName: string;
+  import { SolStore } from '../../components/stores/SolStore';
 
   // Seconds (60 frames) per year (1 earth revolution)
-  $: revTime = secPerYear;
+  $: revTime = $SolStore.secPerYear;
 
   // Constants for comparison
   const earthDist = 100;
@@ -18,7 +14,6 @@
 
   let cameraRef: PerspectiveCamera;
   let controlsRef: OrbitControlsType;
-
 
   // Distance is SCALED DOWN for the last five planets
   $: planets = [
@@ -93,27 +88,29 @@
 
       // Locks camera to target
       if (
-        selectedRef !== null &&
-        selectedRef.geometry.boundingSphere !== null
+        $SolStore.selected.ref !== null &&
+        $SolStore.selected.ref.geometry.boundingSphere !== null
       ) {
         cameraRef.lookAt(0, 0, 0);
         // Moves camera to 1.(5 * planet's width as fraction of distance)
         const goodPos = new Vector3(
-          selectedRef.position.x,
-          selectedRef.position.y +
-            2 * selectedRef.geometry.boundingSphere.radius,
-          selectedRef.position.z
+          $SolStore.selected.ref.position.x,
+          $SolStore.selected.ref.position.y +
+            2 * $SolStore.selected.ref.geometry.boundingSphere.radius,
+          $SolStore.selected.ref.position.z
         ).multiplyScalar(
           1 +
             5 *
-              (selectedRef.geometry.boundingSphere.radius /
-                selectedRef.position.distanceTo(new Vector3(0, 0, 0)))
+              ($SolStore.selected.ref.geometry.boundingSphere.radius /
+                $SolStore.selected.ref.position.distanceTo(
+                  new Vector3(0, 0, 0)
+                ))
         );
 
-        if (shouldLerp === true) {
+        if ($SolStore.selected.shouldLerp === true) {
           cameraRef.position.lerp(goodPos, 0.1);
           setTimeout(() => {
-            shouldLerp = false;
+            $SolStore.selected.shouldLerp = false;
           }, 750);
         } else {
           cameraRef.position.copy(goodPos);
@@ -156,12 +153,5 @@
     speed={planet.speed}
     rotation={planet.rotation}
     name={planet.name}
-    isSelected={planet.name === selectedName}
-    {selectedRef}
-    clickCallback={(mesh) => {
-      selectedName = planet.name;
-      selectedRef = mesh;
-      shouldLerp = true;
-    }}
   />
 {/each}

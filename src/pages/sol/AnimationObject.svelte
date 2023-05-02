@@ -1,11 +1,11 @@
 <script lang="ts">
   import { T, useFrame } from '@threlte/core';
   import { Euler, MathUtils, Mesh, Vector3 } from 'three';
+  import { SolStore } from '../../components/stores/SolStore';
 
   export let size: number;
   export let speed: number;
   export let rotation: number;
-  export let selectedRef: Mesh | null;
 
   export let planetRef: Mesh;
   export let textLookAt: Vector3;
@@ -19,23 +19,24 @@
         MathUtils.degToRad(0)
       );
 
-      const offset = planetRef.position.clone().applyEuler(eu);
-      planetRef.position.set(offset.x, offset.y, offset.z);
+      const offset = planetRef.position.applyEuler(eu);
 
       if (
-        selectedRef !== null &&
-        selectedRef.geometry.boundingSphere !== null
+        $SolStore.selected.ref !== null &&
+        $SolStore.selected.ref.geometry.boundingSphere !== null
       ) {
         const goodPos = new Vector3(
-          selectedRef.position.x,
-          selectedRef.position.y +
-            2 * (selectedRef.geometry.boundingSphere?.radius || 1),
-          selectedRef.position.z
+          $SolStore.selected.ref.position.x,
+          $SolStore.selected.ref.position.y +
+            2 * ($SolStore.selected.ref.geometry.boundingSphere?.radius || 1),
+          $SolStore.selected.ref.position.z
         ).multiplyScalar(
           1 +
             5 *
-              ((selectedRef.geometry.boundingSphere?.radius || 1) /
-                selectedRef.position.distanceTo(new Vector3(0, 0, 0)))
+              (($SolStore.selected.ref.geometry.boundingSphere?.radius || 1) /
+                $SolStore.selected.ref.position.distanceTo(
+                  new Vector3(0, 0, 0)
+                ))
         );
         textLookAt = goodPos;
       } else {

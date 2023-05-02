@@ -12,15 +12,13 @@
   import uranusImg from '../../images/2k_uranus.jpg';
   import neptuneImg from '../../images/2k_neptune.jpg';
   import AnimationObject from './AnimationObject.svelte';
+  import { SolStore } from '../../components/stores/SolStore';
 
   export let distance: number;
   export let size: number;
   export let speed: number;
   export let rotation: number;
   export let name: string;
-  export let isSelected: boolean;
-  export let selectedRef: Mesh | null;
-  export let clickCallback: (mesh: Mesh) => void;
 
   let textLookAt: Vector3;
 
@@ -58,19 +56,12 @@
 </script>
 
 <T.Mesh position={[0, 0, -distance]} let:ref={planetRef}>
-  <AnimationObject
-    {size}
-    {speed}
-    {rotation}
-    {selectedRef}
-    {planetRef}
-    bind:textLookAt
-  />
+  <AnimationObject {size} {speed} {rotation} {planetRef} bind:textLookAt />
   {#if name !== 'Sun'}
     <InteractiveObject
       object={planetRef}
       interactive
-      on:click={() => clickCallback(planetRef)}
+      on:click={() => SolStore.select(name, planetRef, true)}
     />
   {/if}
   <!-- {#if name !== 'Sun' && !isSelected}
