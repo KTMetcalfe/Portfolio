@@ -1,0 +1,10 @@
+---
+import NavbarLayout from '../../layouts/NavbarLayout.astro';
+import SolarSystem from './SolarSystem.svelte';
+
+export const prerender = true;
+---
+
+<NavbarLayout>
+    <SolarSystem client:only='svelte' />
+</NavbarLayout>
