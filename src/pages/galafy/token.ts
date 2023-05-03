@@ -30,6 +30,7 @@ const getTokensFromCode = async (code: string, redirect_uri: string) => {
 };
 
 export const post: APIRoute = async ({ request }) => {
+  console.log(new URL(request.url))
   const { code } = await request.json();
   return {
     body: JSON.stringify(

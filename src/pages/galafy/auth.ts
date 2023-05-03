@@ -32,7 +32,9 @@ const authorize = async (redirect_uri: string) => {
   };
 };
 
-export const get: APIRoute = async ({ params, request }) => {
+export const get: APIRoute = async ({ request }) => {
+  console.log(new URL(request.url));
+
   return {
     body: JSON.stringify(
       await authorize(new URL(request.url).origin + '/galafy')
