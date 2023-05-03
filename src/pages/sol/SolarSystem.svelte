@@ -97,13 +97,12 @@
 <T.PerspectiveCamera
   bind:ref={cameraRef}
   makeDefault
-  fov={72}
-  position={[50, 50, 50]}
+  position={[150, 150, 150]}
 >
   <OrbitControls
     bind:controls={controlsRef}
     enableZoom={true}
-    enablePan={true}
+    enablePan={false}
   />
 </T.PerspectiveCamera>
 

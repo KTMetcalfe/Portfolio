@@ -77,9 +77,13 @@
       {name}
     </Text>
   {/if} -->
-  <T.SphereGeometry args={[size]} />
+  <T.SphereGeometry args={[size, 64, 64]} />
   {#if map != null}
-    <T.MeshStandardMaterial map={useTexture(map)} />
+    <T.MeshStandardMaterial
+      map={useTexture(map)}
+      emissive={name === 'Sun' ? 'red' : 'black'}
+      emissiveIntensity={0.05}
+    />
   {:else}
     <T.MeshLambertMaterial color="pink" />
   {/if}
