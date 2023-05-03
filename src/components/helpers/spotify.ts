@@ -145,3 +145,74 @@ export const getTokensFromRefresh = async () => {
     ? true
     : false;
 };
+
+const getTopOfType = async (top_type: 'artists' | 'tracks') => {
+  const response: TopArtists | TopTracks = await fetch(
+    `https://api.spotify.com/v1/me/top/${top_type}?limit=50`,
+    {
+      headers: {
+        Authorization: 'Bearer ' + localStorage.getItem('spotify_access_token'),
+      },
+    }
+  ).then(async (res) => {
+    if (res.status === 401) {
+      const isAuth = await getTokensFromRefresh();
+      if (!isAuth) {
+        window.location.href = '/galafy';
+      }
+    }
+    return res.json();
+  });
+
+  return response;
+};
+
+export const getTopArtists = async () => {
+  return (await getTopOfType('artists')) as TopArtists;
+};
+
+export const getTopTracks = async () => {
+  return (await getTopOfType('tracks')) as TopTracks;
+};
+
+export const getRelatedArtists = async (artist_id: string) => {
+  const response: { artists: Array<DetailedArtistItem> } = await fetch(
+    `https://api.spotify.com/v1/artists/${artist_id}/related-artists`,
+    {
+      headers: {
+        Authorization: 'Bearer ' + localStorage.getItem('spotify_access_token'),
+      },
+    }
+  ).then(async (res) => {
+    if (res.status === 401) {
+      const isAuth = await getTokensFromRefresh();
+      if (!isAuth) {
+        window.location.href = '/galafy';
+      }
+    }
+    return res.json();
+  });
+
+  return response;
+};
+
+export const getArtistTracks = async (artist_id: string) => {
+  const response: { tracks: Array<DetailedTrackItem> } = await fetch(
+    `https://api.spotify.com/v1/artists/${artist_id}/top-tracks?country=US`,
+    {
+      headers: {
+        Authorization: 'Bearer ' + localStorage.getItem('spotify_access_token'),
+      },
+    }
+  ).then(async (res) => {
+    if (res.status === 401) {
+      const isAuth = await getTokensFromRefresh();
+      if (!isAuth) {
+        window.location.href = '/galafy';
+      }
+    }
+    return res.json();
+  });
+
+  return response;
+};

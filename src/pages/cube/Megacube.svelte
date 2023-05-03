@@ -1,46 +1,17 @@
 <script lang="ts">
   // TODO: Smooth movement of cube shrinking "snake"
-  import { T, useFrame } from '@threlte/core';
-  import { onMount } from 'svelte';
-  import { tweened } from 'svelte/motion';
+  import { InstancedMesh, T, useFrame } from '@threlte/core';
   import Cube from './Cube.svelte';
   import { CubeStore } from '../../components/stores/CubeStore';
+  import { BoxGeometry, MeshStandardMaterial } from 'three';
 
-  let size = 10;
+  export let size: number;
 
-  onMount(() => {
-    for (let i = -size / 2; i < size / 2; i++) {
-      for (let j = -size / 2; j < size / 2; j++) {
-        for (let k = -size / 2; k < size / 2; k++) {
-          CubeStore.add(
-            i,
-            j,
-            k,
-            // Color outer edges
-            // i === size / 2 - 1 ||
-            // 	i === -size / 2 ||
-            // 	j === size / 2 - 1 ||
-            // 	j === -size / 2 ||
-            // 	k === size / 2 - 1 ||
-            // 	k === -size / 2
-            // 	? '#333333'
-            // 	:
-            '#' +
-              Math.floor(Math.random() * 0xffffff)
-                .toString(16)
-                .padStart(6, '0')
-          );
-        }
-      }
-    }
-
-    // Empty the store on unmount
-    return () => {
-      CubeStore.clear();
-    };
-  });
-
-  let selectedPosition = { posX: size / 2 - 1, posY: size / 2 - 1, posZ: size / 2 - 1 }
+  let selectedPosition = {
+    posX: size / 2 - 1,
+    posY: size / 2 - 1,
+    posZ: size / 2 - 1,
+  };
 
   const isOnEdge = (posX: number, posY: number, posZ: number) => {
     return (
@@ -81,6 +52,7 @@
 
   let rotAmount = 0;
 
+  // TODO: Slow down animation
   const { start, stop, started } = useFrame(
     () => {
       if (selectedPosition) {
@@ -99,7 +71,7 @@
           };
         }
       }
-      rotAmount = rotAmount === 360 ? 0 : rotAmount + 0.01;
+      rotAmount = rotAmount === 360 ? 0 : rotAmount + 0.005;
     },
     {
       autostart: true,
@@ -107,14 +79,31 @@
   );
 </script>
 
-<T.Group rotation={[rotAmount, rotAmount, rotAmount]}>
-  {#each [...$CubeStore] as cube, i (cube.x + ',' + cube.y + ',' + cube.z)}
-    <Cube
-      color={cube.color}
-      posSelected={$started ? selectedPosition : undefined}
-      posX={cube.x}
-      posY={cube.y}
-      posZ={cube.z}
-    />
-  {/each}
-</T.Group>
+<InstancedMesh
+  id="selector"
+  interactive
+  material={new MeshStandardMaterial({
+    transparent: true,
+    opacity: 0,
+  })}
+  geometry={new BoxGeometry()}
+>
+  <InstancedMesh
+    id="cube"
+    material={new MeshStandardMaterial()}
+    geometry={new BoxGeometry()}
+    castShadow
+  >
+    <T.Group rotation={[rotAmount, rotAmount, rotAmount]}>
+      {#each [...$CubeStore] as cube, i (cube.x + ',' + cube.y + ',' + cube.z)}
+        <Cube
+          color={cube.color}
+          posSelected={$started ? selectedPosition : undefined}
+          posX={cube.x}
+          posY={cube.y}
+          posZ={cube.z}
+        />
+      {/each}
+    </T.Group>
+  </InstancedMesh>
+</InstancedMesh>
