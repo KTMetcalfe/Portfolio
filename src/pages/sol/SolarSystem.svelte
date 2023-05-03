@@ -110,8 +110,7 @@
 <T.AmbientLight intensity={0.25} />
 <T.PointLight intensity={2} />
 
-<!-- TODO: Make more efficient -->
-<Stars />
+<Stars radius={250} />
 
 {#each [...$PlanetStore] as planet, i (planet[0])}
   <Planet
