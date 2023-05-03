@@ -18,6 +18,7 @@ const authorize = async (redirect_uri: string) => {
   const scope =
     'user-read-playback-state user-modify-playback-state user-read-currently-playing streaming user-read-playback-position user-top-read user-read-recently-played';
 
+    console.log(redirect_uri)
   const query = new URLSearchParams({
     response_type: 'code',
     client_id,
