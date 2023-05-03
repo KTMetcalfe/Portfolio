@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { InteractiveObject, T } from '@threlte/core';
+  import { Instance, InteractiveObject, T } from '@threlte/core';
   import { spring } from 'svelte/motion';
   import { Color } from 'three';
   import { CubeStore } from '../../components/stores/CubeStore';
@@ -49,28 +49,22 @@
 </script>
 
 <T.Group position.x={posX} position.y={posY} position.z={posZ}>
-  <T.Mesh scale={1} let:ref>
-    <InteractiveObject
-      object={ref}
-      interactive
-      on:pointerenter={() => {
-        tmpColor = '#666666';
-      }}
-      on:pointerleave={() => {
-        tmpColor = color;
-      }}
-      on:pointerdown={() => {
-        CubeStore.remove(posX, posY, posZ);
-      }}
-    />
-    <T.BoxGeometry />
-    <T.MeshStandardMaterial opacity={0} transparent />
-  </T.Mesh>
-  <T.Mesh scale={$scale} castShadow>
-    <T.BoxGeometry />
-    <!-- Dumb way to get around color typing -->
-    <T.MeshStandardMaterial
-      color={new Color(`#${tmpColor.replace('#', '')}`)}
-    />
-  </T.Mesh>
+  <Instance
+    id="selector"
+    scale={1}
+    on:pointerenter={() => {
+      tmpColor = '#666666';
+    }}
+    on:pointerleave={() => {
+      tmpColor = color;
+    }}
+    on:pointerdown={() => {
+      CubeStore.remove(posX, posY, posZ);
+    }}
+  />
+  <Instance
+    id="cube"
+    scale={$scale}
+    color={new Color(`#${tmpColor.replace('#', '')}`)}
+  />
 </T.Group>
