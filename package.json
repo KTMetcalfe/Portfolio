@@ -17,8 +17,6 @@
     "@react-three/cannon": "^6.5.2",
     "@react-three/drei": "^9.66.1",
     "@react-three/fiber": "^8.13.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.1",
     "astro": "^2.3.4",
     "crypto-js": "^4.1.1",
     "daisyui": "^2.51.5",
@@ -26,9 +24,7 @@
     "react-dom": "^18.2.0",
     "svelte": "^3.58.0",
     "tailwindcss": "^3.3.1",
-    "three": "^0.150.0"
-  },
-  "devDependencies": {
+    "three": "^0.150.0",
     "@dimforge/rapier3d-compat": "^0.11.2",
     "@theatre/core": "^0.6.0",
     "@theatre/studio": "^0.6.0",
@@ -36,7 +32,11 @@
     "@threlte/extras": "^4.9.3",
     "@threlte/preprocess": "^0.0.2",
     "@threlte/rapier": "^0.5.0",
-    "@threlte/theatre": "^0.0.2",
+    "@threlte/theatre": "^0.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.1",
     "@types/node": "^18.15.11",
     "@types/three": "^0.150.1",
     "svelte-sequential-preprocessor": "^1.0.0"

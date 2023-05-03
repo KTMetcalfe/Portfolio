@@ -1,8 +1,9 @@
-const getTokensFromCode = async (code) => {
-  const query = new URLSearchParams({
-    grant_type: 'authorization_code',
-    code: code,
-    redirect_uri: import.meta.env.SPOTIFY_REDIRECT_URI,
+import type { APIRoute } from 'astro';
+
+const getTokensFromRefresh = async (refresh_token: string) => {
+  const data = new URLSearchParams({
+    grant_type: 'refresh_token',
+    refresh_token,
   });
 
   const result = await fetch('https://accounts.spotify.com/api/token', {
@@ -10,26 +11,25 @@ const getTokensFromCode = async (code) => {
     headers: {
       Authorization:
         'Basic ' +
-        new Buffer.from(
+        Buffer.from(
           import.meta.env.SPOTIFY_CLIENT_ID +
             ':' +
             import.meta.env.SPOTIFY_CLIENT_SECRET
         ).toString('base64'),
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: query,
+    body: data,
   }).then((res) => res.json());
 
   return {
     access_token: result.access_token,
-    refresh_token: result.refresh_token,
     expires_at: Date.now() + result.expires_in * 1000,
   };
 };
 
-export async function post({ request }) {
-  const { code } = await request.json();
+export const post: APIRoute = async ({ request }) => {
+  const { refresh_token } = await request.json();
   return {
-    body: JSON.stringify(await getTokensFromCode(code)),
+    body: JSON.stringify(await getTokensFromRefresh(refresh_token)),
   };
-}
+};
