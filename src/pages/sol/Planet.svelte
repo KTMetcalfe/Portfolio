@@ -1,5 +1,8 @@
 <script lang="ts">
   import { T, useTexture, InteractiveObject } from '@threlte/core';
+  import { Text } from '@threlte/extras';
+  import { SolStore } from '../../components/stores/SolStore';
+  import { Vector3 } from 'three';
 
   import sunImg from '../../images/2k_sun.jpg';
   import mercuryImg from '../../images/2k_mercury.jpg';
@@ -10,16 +13,13 @@
   import saturnImg from '../../images/2k_saturn.jpg';
   import uranusImg from '../../images/2k_uranus.jpg';
   import neptuneImg from '../../images/2k_neptune.jpg';
-  import { SolStore } from '../../components/stores/SolStore';
-  import type { Vector3 } from 'three';
 
   export let position: Vector3;
   export let size: number;
   export let rotation: Vector3;
   export let name: string;
 
-  // TODO: Incorporate text
-  let textLookAt: Vector3;
+  export let textLookAt: Vector3;
 
   // Chooses appropriate planet texture
   let map: string | null = null;
@@ -54,37 +54,35 @@
   }
 </script>
 
-<T.Mesh
-  position={[position.x, position.y, position.z]}
-  rotation={[rotation.x, rotation.y, rotation.z]}
-  let:ref={planetRef}
->
-  {#if name !== 'Sun'}
-    <InteractiveObject
-      object={planetRef}
-      interactive
-      on:click={() => SolStore.select(name, true)}
-    />
-  {/if}
-  <!-- TODO: Incorporate text -->
-  <!-- {#if name !== 'Sun' && !isSelected}
+<T.Group position={[position.x, position.y, position.z]}>
+  {#if name !== 'Sun' && $SolStore.selected.name !== name}
     <Text
-      position={new Vector3(0, size + 5, 0)}
-      scale={new Vector3(size * 10, size * 10, size * 10)}
+      text={name}
+      anchorX="center"
+      anchorY="bottom"
+      position={new Vector3(0, size + 2, 0)}
+      scale={size * 10 + 15}
       lookAt={textLookAt}
       color="white"
-    >
-      {name}
-    </Text>
-  {/if} -->
-  <T.SphereGeometry args={[size, 64, 64]} />
-  {#if map != null}
-    <T.MeshStandardMaterial
-      map={useTexture(map)}
-      emissive={name === 'Sun' ? 'red' : 'black'}
-      emissiveIntensity={0.05}
     />
-  {:else}
-    <T.MeshLambertMaterial color="pink" />
   {/if}
-</T.Mesh>
+  <T.Mesh rotation={[rotation.x, rotation.y, rotation.z]} let:ref={planetRef}>
+    {#if name !== 'Sun'}
+      <InteractiveObject
+        object={planetRef}
+        interactive
+        on:click={() => SolStore.select(name, true)}
+      />
+    {/if}
+    <T.SphereGeometry args={[size, 64, 64]} />
+    {#if map != null}
+      <T.MeshStandardMaterial
+        map={useTexture(map)}
+        emissive={name === 'Sun' ? 'red' : 'black'}
+        emissiveIntensity={0.05}
+      />
+    {:else}
+      <T.MeshLambertMaterial color="pink" />
+    {/if}
+  </T.Mesh>
+</T.Group>

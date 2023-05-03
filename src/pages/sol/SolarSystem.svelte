@@ -10,6 +10,8 @@
   let cameraRef: PerspectiveCamera;
   let controlsRef: OrbitControlsType;
 
+  let textLookAt: Vector3 | null;
+
   // Updates object every frame
   // Seconds (60 frames) per year (1 earth revolution)
   useFrame(
@@ -38,12 +40,6 @@
             )),
             planet.rotation.z
           );
-
-          // TODO: Update text lookAt
-          //   textLookAt = goodPos;
-          // } else {
-          //   textLookAt = new Vector3(0, offset.y + size * 2, 0);
-          // }
         });
         return state;
       });
@@ -78,6 +74,10 @@
           cameraRef.position.copy(goodPos);
         }
         cameraRef.updateProjectionMatrix();
+
+        textLookAt = goodPos;
+      } else {
+        textLookAt = null;
       }
       // TODO: Figure out what this is for
       // else {
@@ -113,6 +113,7 @@
   <Planet
     position={planet[1].position}
     rotation={planet[1].rotation}
+    textLookAt={textLookAt || new Vector3(0, planet[1].size + 2, 0)}
     size={planet[1].size}
     name={planet[0]}
   />
