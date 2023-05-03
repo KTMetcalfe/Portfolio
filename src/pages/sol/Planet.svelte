@@ -18,6 +18,7 @@
   export let rotation: Vector3;
   export let name: string;
 
+  // TODO: Incorporate text
   let textLookAt: Vector3;
 
   // Chooses appropriate planet texture
@@ -65,6 +66,7 @@
       on:click={() => SolStore.select(name, true)}
     />
   {/if}
+  <!-- TODO: Incorporate text -->
   <!-- {#if name !== 'Sun' && !isSelected}
     <Text
       position={new Vector3(0, size + 5, 0)}

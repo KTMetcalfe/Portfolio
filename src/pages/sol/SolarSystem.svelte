@@ -92,6 +92,7 @@
   );
 </script>
 
+<!-- TODO: Create star particles -->
 <!-- <Stars radius={250} /> -->
 <T.PerspectiveCamera
   bind:ref={cameraRef}

@@ -1,5 +1,5 @@
 import { derived, writable } from 'svelte/store';
-import { type Mesh, Vector3 } from 'three';
+import { type Mesh, Vector3, MathUtils, Euler } from 'three';
 
 type SolStoreType = {
   selected: {
@@ -15,6 +15,7 @@ type PlanetType = {
   size: number;
   orbitRatio: number;
   spinRatio: number;
+  zeroDate: Date;
 };
 
 type PlanetStoreType = Map<string, PlanetType>;
@@ -34,6 +35,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       size: 20 * earthSize,
       orbitRatio: 0,
       spinRatio: 24.47,
+      zeroDate: new Date('2000-01-01T00:00:00.000Z'),
     },
   ],
   [
@@ -44,6 +46,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       size: 0.38 * earthSize,
       orbitRatio: 88,
       spinRatio: 59,
+      zeroDate: new Date('2000-02-01T00:00:00.000Z'),
     },
   ],
   [
@@ -54,6 +57,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       size: 0.95 * earthSize,
       orbitRatio: 225,
       spinRatio: 243,
+      zeroDate: new Date('2000-04-20T00:00:00.000Z'),
     },
   ],
   [
@@ -64,6 +68,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       size: 1 * earthSize,
       orbitRatio: 365,
       spinRatio: 1,
+      zeroDate: new Date('2000-09-23T00:00:00.000Z'),
     },
   ],
   [
@@ -74,6 +79,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       size: 0.53 * earthSize,
       orbitRatio: 687,
       spinRatio: 1.02,
+      zeroDate: new Date('2000-01-01T00:00:00.000Z'),
     },
   ],
   [
@@ -84,6 +90,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       size: 10.97 * earthSize,
       orbitRatio: 12 * 365,
       spinRatio: 0.414,
+      zeroDate: new Date('2010-09-18T00:00:00.000Z'),
     },
   ],
   [
@@ -94,6 +101,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       size: 9.14 * earthSize,
       orbitRatio: 29 * 365,
       spinRatio: 0.444,
+      zeroDate: new Date('2025-08-12T00:00:00.000Z'),
     },
   ],
   [
@@ -104,6 +112,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       size: 3.98 * earthSize,
       orbitRatio: 84 * 365,
       spinRatio: 0.718,
+      zeroDate: new Date('2010-09-27T00:00:00.000Z'),
     },
   ],
   [
@@ -114,6 +123,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       size: 3.86 * earthSize,
       orbitRatio: 165 * 365,
       spinRatio: 0.671,
+      zeroDate: new Date('2024-07-21T00:00:00.000Z'),
     },
   ],
 ]);
@@ -155,6 +165,43 @@ export const SolStore = createSolStore();
 const createPlanetStore = () => {
   const { subscribe, set, update } =
     writable<PlanetStoreType>(defaultPlanetStore);
+
+  // TODO: Figure out how to get more specific positions
+  // Math might be wrong, but so can the data for true anomaly of 0
+  // https://colab.research.google.com/drive/19ALDzv9HkH3jpFNEH6PDrVUEsQ5poSrD
+  const calculateCurrentPlanetPositions = () => {
+    const currentDate = new Date();
+
+    update((state) => {
+      state.forEach((planet, name) => {
+        const timeSinceZero = currentDate.getTime() - planet.zeroDate.getTime();
+        const days = timeSinceZero / (1000 * 3600 * 24);
+        // Complete 1 orbit (365 / orbitRatio) in 1 year (revTime)
+        const offsetEuler = new Euler(
+          MathUtils.degToRad(0),
+          MathUtils.degToRad(
+            planet.orbitRatio === 0 ? 0 : (360 / planet.orbitRatio) * days
+          ),
+          MathUtils.degToRad(0)
+        );
+
+        const newPos = planet.position.clone().applyEuler(offsetEuler);
+        planet.position.copy(newPos);
+
+        // Complete (365 / spinRatio) rotations in 1 year (revTime)
+        planet.rotation.set(
+          planet.rotation.x,
+          (planet.rotation.y += MathUtils.degToRad(
+            (360 / planet.spinRatio) * days
+          )),
+          planet.rotation.z
+        );
+      });
+      return state;
+    });
+  };
+
+  calculateCurrentPlanetPositions();
 
   return {
     subscribe,
