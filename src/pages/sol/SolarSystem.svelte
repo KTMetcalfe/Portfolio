@@ -13,15 +13,16 @@
   // Updates object every frame
   // Seconds (60 frames) per year (1 earth revolution)
   useFrame(
-    () => {
+    (ctx) => {
       PlanetStore.update((state) => {
         state.forEach((planet, name) => {
+          // Complete 1 orbit (365 / orbitRatio) in 1 year (revTime)
           const offsetEuler = new Euler(
             MathUtils.degToRad(0),
             MathUtils.degToRad(
               planet.orbitRatio === 0
                 ? 0
-                : 360 / (revTime / planet.orbitRatio) / 60
+                : ((360 / revTime / 60) * 365) / planet.orbitRatio
             ),
             MathUtils.degToRad(0)
           );
@@ -29,10 +30,11 @@
           const newPos = planet.position.clone().applyEuler(offsetEuler);
           planet.position.copy(newPos);
 
+          // Complete (365 / spinRatio) rotations in 1 year (revTime)
           planet.rotation.set(
             planet.rotation.x,
             (planet.rotation.y += MathUtils.degToRad(
-              360 / (planet.spinRatio * revTime)
+              ((360 / revTime / 60) * 365) / planet.spinRatio
             )),
             planet.rotation.z
           );

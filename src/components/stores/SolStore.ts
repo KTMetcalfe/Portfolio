@@ -22,6 +22,8 @@ type PlanetStoreType = Map<string, PlanetType>;
 const earthDist = 100;
 const earthSize = 1;
 
+// orbitRatio is the amount of earth days for full orbit
+// spinRatio is the amount of earth days for full rotation
 // Distance is SCALED DOWN for the last five planets
 const defaultPlanetStore: PlanetStoreType = new Map([
   [
@@ -31,7 +33,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       rotation: new Vector3(0, 0, 0),
       size: 20 * earthSize,
       orbitRatio: 0,
-      spinRatio: 27,
+      spinRatio: 24.47,
     },
   ],
   [
@@ -40,8 +42,8 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       position: new Vector3(0, 0, -0.39 * earthDist),
       rotation: new Vector3(0, 0, 0),
       size: 0.38 * earthSize,
-      orbitRatio: 0.62,
-      spinRatio: 58.67,
+      orbitRatio: 88,
+      spinRatio: 59,
     },
   ],
   [
@@ -50,8 +52,8 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       position: new Vector3(0, 0, -0.72 * earthDist),
       rotation: new Vector3(0, 0, 0),
       size: 0.95 * earthSize,
-      orbitRatio: 0.24,
-      spinRatio: 243.02,
+      orbitRatio: 225,
+      spinRatio: 243,
     },
   ],
   [
@@ -60,8 +62,8 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       position: new Vector3(0, 0, -1 * earthDist),
       rotation: new Vector3(0, 0, 0),
       size: 1 * earthSize,
-      orbitRatio: 1,
-      spinRatio: 0.99,
+      orbitRatio: 365,
+      spinRatio: 1,
     },
   ],
   [
@@ -70,7 +72,7 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       position: new Vector3(0, 0, -(1.52 * earthDist) / 1.25),
       rotation: new Vector3(0, 0, 0),
       size: 0.53 * earthSize,
-      orbitRatio: 1.88,
+      orbitRatio: 687,
       spinRatio: 1.02,
     },
   ],
@@ -80,8 +82,8 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       position: new Vector3(0, 0, -(5.2 * earthDist) / 3),
       rotation: new Vector3(0, 0, 0),
       size: 10.97 * earthSize,
-      orbitRatio: 11.86,
-      spinRatio: 0.42,
+      orbitRatio: 12 * 365,
+      spinRatio: 0.414,
     },
   ],
   [
@@ -90,8 +92,8 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       position: new Vector3(0, 0, -(9.54 * earthDist) / 4),
       rotation: new Vector3(0, 0, 0),
       size: 9.14 * earthSize,
-      orbitRatio: 29.46,
-      spinRatio: 0.44,
+      orbitRatio: 29 * 365,
+      spinRatio: 0.444,
     },
   ],
   [
@@ -100,8 +102,8 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       position: new Vector3(0, 0, -(19.18 * earthDist) / 6),
       rotation: new Vector3(0, 0, 0),
       size: 3.98 * earthSize,
-      orbitRatio: 164.79,
-      spinRatio: 0.72,
+      orbitRatio: 84 * 365,
+      spinRatio: 0.718,
     },
   ],
   [
@@ -110,8 +112,8 @@ const defaultPlanetStore: PlanetStoreType = new Map([
       position: new Vector3(0, 0, -(30.06 * earthDist) / 8),
       rotation: new Vector3(0, 0, 0),
       size: 3.86 * earthSize,
-      orbitRatio: 248.59,
-      spinRatio: 0.67,
+      orbitRatio: 165 * 365,
+      spinRatio: 0.671,
     },
   ],
 ]);
