@@ -4,6 +4,7 @@
   import { type PerspectiveCamera, Vector3, MathUtils, Euler } from 'three';
   import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls';
   import { PlanetStore, SolStore } from '../../components/stores/SolStore';
+  import Stars from './Stars.svelte';
 
   $: revTime = $SolStore.secPerYear;
 
@@ -92,8 +93,6 @@
   );
 </script>
 
-<!-- TODO: Create star particles -->
-<!-- <Stars radius={250} /> -->
 <T.PerspectiveCamera
   bind:ref={cameraRef}
   makeDefault
@@ -103,11 +102,16 @@
     bind:controls={controlsRef}
     enableZoom={true}
     enablePan={false}
+    enableDamping={true}
+    dampingFactor={0.1}
   />
 </T.PerspectiveCamera>
 
 <T.AmbientLight intensity={0.25} />
 <T.PointLight intensity={2} />
+
+<!-- TODO: Make more efficient -->
+<Stars />
 
 {#each [...$PlanetStore] as planet, i (planet[0])}
   <Planet

@@ -4,6 +4,7 @@
   import { SolStore } from '../../components/stores/SolStore';
 </script>
 
+<!-- TODO: Add loading display -->
 <div>
   <div
     class="w-full h-[calc(100vh-4rem)] overflow-hidden bg-black"
