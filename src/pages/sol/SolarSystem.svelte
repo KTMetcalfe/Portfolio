@@ -67,6 +67,7 @@
 
         if ($SolStore.selected.shouldLerp === true) {
           cameraPos = cameraPos.lerp(goodPos, 0.1);
+          // TODO: Make lerp look better
           setTimeout(() => {
             $SolStore.selected.shouldLerp = false;
           }, 750);
