@@ -13,10 +13,12 @@
 
   let textLookAt: Vector3 | null;
 
+  let cameraPos: Vector3 = new Vector3(150, 150, 150);
+
   // Updates object every frame
   // Seconds (60 frames) per year (1 earth revolution)
   useFrame(
-    (ctx) => {
+    () => {
       PlanetStore.update((state) => {
         state.forEach((planet, name) => {
           // Complete 1 orbit (365 / orbitRatio) in 1 year (revTime)
@@ -45,15 +47,12 @@
         return state;
       });
 
-      controlsRef.update();
-
       // Locks camera to target
       if ($SolStore.selected.name !== null) {
         const selectedPlanet = $PlanetStore.get($SolStore.selected.name);
         if (selectedPlanet === undefined)
           throw new Error("Planet doesn't exist");
 
-        cameraRef.lookAt(0, 0, 0);
         // Moves camera to 1.(5 * planet's width as fraction of distance)
         const goodPos = new Vector3(
           selectedPlanet.position.x,
@@ -61,31 +60,27 @@
           selectedPlanet.position.z
         ).multiplyScalar(
           1 +
-            5 *
+            10 *
               (selectedPlanet.size /
                 selectedPlanet.position.distanceTo(new Vector3(0, 0, 0)))
         );
 
         if ($SolStore.selected.shouldLerp === true) {
-          cameraRef.position.lerp(goodPos, 0.1);
+          cameraPos = cameraPos.lerp(goodPos, 0.1);
           setTimeout(() => {
             $SolStore.selected.shouldLerp = false;
           }, 750);
         } else {
-          cameraRef.position.copy(goodPos);
+          cameraPos = goodPos;
         }
-        cameraRef.updateProjectionMatrix();
 
         textLookAt = goodPos;
       } else {
         textLookAt = null;
       }
-      // TODO: Figure out what this is for
-      // else {
-      //   camera.lookAt(0, 0, 0);
-      //   camera.position.lerp(new THREE.Vector3(50, 50, 50), .1);
-      //   camera.updateProjectionMatrix();
-      // }
+
+      controlsRef.update();
+      cameraRef.updateProjectionMatrix();
     },
     {
       autostart: true,
@@ -96,11 +91,12 @@
 <T.PerspectiveCamera
   bind:ref={cameraRef}
   makeDefault
-  position={[150, 150, 150]}
+  position={[cameraPos.x, cameraPos.y, cameraPos.z]}
 >
   <OrbitControls
     bind:controls={controlsRef}
-    enableZoom={true}
+    enableRotate={$SolStore.selected.name === null}
+    enableZoom={$SolStore.selected.name === null}
     enablePan={false}
     enableDamping={true}
     dampingFactor={0.1}
