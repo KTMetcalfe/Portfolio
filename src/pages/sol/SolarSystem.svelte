@@ -5,6 +5,7 @@
   import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls';
   import { PlanetStore, SolStore } from '../../components/stores/SolStore';
   import Stars from './Stars.svelte';
+  import { tweened } from 'svelte/motion';
 
   $: revTime = $SolStore.secPerYear;
 
@@ -87,12 +88,21 @@
       autostart: true,
     }
   );
+  const fov = tweened(48);
+  $: {
+    if ($SolStore.selected.name !== null) {
+      fov.set(72);
+    } else {
+      fov.set(48);
+    }
+  }
 </script>
 
 <T.PerspectiveCamera
   bind:ref={cameraRef}
   makeDefault
   position={[cameraPos.x, cameraPos.y, cameraPos.z]}
+  fov={$fov}
 >
   <OrbitControls
     bind:controls={controlsRef}

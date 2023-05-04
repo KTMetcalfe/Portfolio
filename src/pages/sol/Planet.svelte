@@ -71,7 +71,11 @@
       <InteractiveObject
         object={planetRef}
         interactive
-        on:click={() => SolStore.select(name, true)}
+        on:click={() => {
+          if ($SolStore.selected.name !== name) {
+            SolStore.select(name, true);
+          }
+        }}
       />
     {/if}
     <T.SphereGeometry args={[size, 64, 64]} />
