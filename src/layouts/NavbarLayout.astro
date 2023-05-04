@@ -22,13 +22,10 @@ const { title } = Astro.props;
     <div id='navbar' class='sticky top-0 h-16 bg-base-100'>
       <div class='navbar w-full'>
         <div class='navbar-start'>
-          <a class='btn btn-ghost normal-case text-xl' href='/'>Kian Metcalfe</a
-          >
-        </div>
-        <div class='navbar-end'>
+          <a class='btn btn-ghost normal-case text-lg' href='/'>About Me</a>
           <ul class='menu menu-horizontal px-1'>
             <li tabindex='0'>
-              <a class='btn btn-ghost normal-case text-lg'>
+              <a class='btn btn-ghost normal-case text-lg py-0'>
                 Projects
                 <svg
                   class='fill-current'
@@ -52,6 +49,12 @@ const { title } = Astro.props;
               </ul>
             </li>
           </ul>
+        </div>
+        <div class='navbar-end'>
+          <a
+            class='btn btn-primary normal-case text-lg'
+            href='mailto:contact@kianm.net'>Contact Me</a
+          >
         </div>
       </div>
     </div>
