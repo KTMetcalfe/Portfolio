@@ -66,6 +66,9 @@
       color="white"
     />
   {/if}
+  {#if name === 'Saturn'}
+  <!-- TODO: Add rings -->
+  {/if}
   <T.Mesh rotation={[rotation.x, rotation.y, rotation.z]} let:ref={planetRef}>
     {#if name !== 'Sun'}
       <InteractiveObject
