@@ -55,10 +55,16 @@
 
           if (distance < radius) {
             dot.z =
-              Math.sin(clock.elapsedTime + dot.x + dot.y) * 0.25 -
+              Math.sin(
+                clock.elapsedTime + dot.x + dot.y + window.scrollY / 100
+              ) *
+                0.25 -
               (intensity * (radius - distance)) / radius;
           } else {
-            dot.z = Math.sin(clock.elapsedTime + dot.x + dot.y) * 0.25;
+            dot.z =
+              Math.sin(
+                clock.elapsedTime + dot.x + dot.y + window.scrollY / 100
+              ) * 0.25;
           }
         });
         return state;
