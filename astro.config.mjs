@@ -1,16 +1,22 @@
-import { defineConfig } from 'astro/config';
-import tailwind from '@astrojs/tailwind';
-import svelte from '@astrojs/svelte';
-import react from '@astrojs/react';
+import { defineConfig } from "astro/config";
+import tailwind from "@astrojs/tailwind";
+import svelte from "@astrojs/svelte";
+import react from "@astrojs/react";
 
-import vercel from '@astrojs/vercel/serverless';
+import vercel from "@astrojs/vercel/serverless";
 
 // https://astro.build/config
 export default defineConfig({
-  output: 'server',
+  output: "server",
   integrations: [tailwind(), svelte(), react()],
   adapter: vercel(),
   vite: {
-    ssr: { noExternal: ['postprocessing'] },
+    resolve: {
+      alias: {
+        "three/examples/jsm/controls/OrbitControls":
+          "three/examples/jsm/controls/OrbitControls.js",
+      },
+    },
+    ssr: { noExternal: ["postprocessing"] },
   },
 });
