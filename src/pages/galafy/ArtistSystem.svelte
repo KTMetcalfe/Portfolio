@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { T, useTexture, Instance, InteractiveObject } from '@threlte/core';
+  import { T } from '@threlte/core';
   import type {
     DetailedArtistItem,
     DetailedTrackItem,
   } from '../../components/helpers/spotify';
   import { Color } from 'three';
   import { tweened } from 'svelte/motion';
+  import { Instance, useTexture } from '@threlte/extras';
 
   export let artist: DetailedArtistItem;
   export let position: [number, number, number];
@@ -28,18 +29,20 @@
 <T.Group {position}>
   <!-- TEMPORARY Identifier for top artist -->
   {#if isTopArtist}
-    <T.Mesh position={[0, 5, 0]} scale={scale * 0.5} let:ref>
+    <T.Mesh position={[0, 5, 0]} scale={scale * 0.5}>
       <T.SphereGeometry args={[1, 32, 32]} />
       <T.MeshStandardMaterial color={new Color('#ff0000')} />
     </T.Mesh>
   {/if}
   {#if isSelected}
     <!-- Artist as sun -->
-    <T.Mesh scale={scale * $scaleMultiple} let:ref>
-      <InteractiveObject interactive object={ref} />
+    <T.Mesh scale={scale * $scaleMultiple}>
       <T.SphereGeometry args={[1, 32, 32]} />
       {#if isSelected && artist.images.length > 0}
-        <T.MeshStandardMaterial map={useTexture(artist.images[0].url)} />
+        {@const texture = useTexture(artist.images[0].url)}
+        {#await texture then map}
+          <T.MeshStandardMaterial {map} />
+        {/await}
       {:else if color !== ''}
         <T.MeshStandardMaterial
           color={new Color(`#${color.replace('#', '')}`)}
@@ -53,9 +56,10 @@
       <T.Mesh position={planet[1].position} scale={scale * 0.5}>
         <T.SphereGeometry args={[1, 32, 32]} />
         {#if isSelected && planet[1].track.album.images.length > 0}
-          <T.MeshStandardMaterial
-            map={useTexture(planet[1].track.album.images[0].url)}
-          />
+          {@const texture = useTexture(planet[1].track.album.images[0].url)}
+          {#await texture then map}
+            <T.MeshStandardMaterial {map} />
+          {/await}
         {:else if color !== ''}
           <T.MeshStandardMaterial
             color={new Color(`#${color.replace('#', '')}`)}

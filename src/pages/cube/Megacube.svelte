@@ -1,9 +1,10 @@
 <script lang="ts">
   // TODO: Smooth movement of cube shrinking "snake"
-  import { InstancedMesh, T, useFrame } from '@threlte/core';
+  import { T, useFrame } from '@threlte/core';
   import Cube from './Cube.svelte';
   import { CubeStore } from '../../components/stores/CubeStore';
   import { BoxGeometry, MeshStandardMaterial } from 'three';
+  import { InstancedMesh } from '@threlte/extras';
 
   export let size: number;
 

@@ -5,7 +5,7 @@
     getTopTracks,
     getArtistTracks,
   } from '../../components/helpers/spotify';
-  import { Canvas, InstancedMesh, OrbitControls, T } from '@threlte/core';
+  import { Canvas, T } from '@threlte/core';
   import ArtistSystem from './ArtistSystem.svelte';
   import { onMount } from 'svelte';
   import { GalaxyStore } from '../../components/stores/GalaxyStore';
@@ -16,11 +16,11 @@
     SphereGeometry,
     Vector3,
   } from 'three';
-  import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls';
   import {
     customLerp,
     quinticEaseInOut,
   } from '../../components/helpers/animation';
+  import { InstancedMesh, OrbitControls, interactivity } from '@threlte/extras';
 
   const createArtistSystems = async () => {
     const topArtists = await getTopArtists();
@@ -138,10 +138,12 @@
   });
 
   let cameraRef: PerspectiveCamera;
-  let controlsRef: OrbitControlsType;
+  let controlsRef: OrbitControls;
 
   let isCameraFocusing = false;
   let selectedSystemId: string | null = null;
+
+  interactivity();
 </script>
 
 <div

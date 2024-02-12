@@ -1,21 +1,7 @@
 <script lang="ts">
-  import {
-    Instance,
-    InstancedMesh,
-    T,
-    useFrame,
-    useThrelte,
-  } from '@threlte/core';
-  import {
-    CircleGeometry,
-    Color,
-    MeshBasicMaterial,
-    MeshStandardMaterial,
-    PerspectiveCamera,
-    Raycaster,
-    Vector2,
-    Vector3,
-  } from 'three';
+  import { T, useTask, useThrelte } from '@threlte/core';
+  import { InstancedMesh, Instance } from '@threlte/extras';
+  import { Color, Raycaster, Vector2, Vector3 } from 'three';
   import { bgStore } from '../components/stores/BackgroundStore';
   import { onMount } from 'svelte';
 
@@ -25,15 +11,16 @@
 
   const { camera } = useThrelte();
 
+  let elapsedTime = 0;
   onMount(() => {
     document.getElementById('pageroot')?.addEventListener('mousemove', (e) => {
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     });
-  });
 
-  const { start, stop, started } = useFrame(
-    ({ clock, scene }) => {
+    const { scene } = useThrelte();
+    useTask((delta) => {
+      elapsedTime += delta;
       raycaster.setFromCamera(mouse, $camera);
 
       const intersects = raycaster.intersectObjects(scene.children);
@@ -55,31 +42,24 @@
 
           if (distance < radius) {
             dot.z =
-              Math.sin(
-                clock.elapsedTime + dot.x + dot.y + window.scrollY / 100
-              ) *
+              Math.sin(elapsedTime + dot.x + dot.y + window.scrollY / 100) *
                 0.25 -
               (intensity * (radius - distance)) / radius;
           } else {
             dot.z =
-              Math.sin(
-                clock.elapsedTime + dot.x + dot.y + window.scrollY / 100
-              ) * 0.25;
+              Math.sin(elapsedTime + dot.x + dot.y + window.scrollY / 100) *
+              0.25;
           }
         });
         return state;
       });
-    },
-    {
-      autostart: true,
-    }
-  );
+    });
+  });
 </script>
 
-<InstancedMesh
-  material={new MeshBasicMaterial()}
-  geometry={new CircleGeometry(0.02, 6)}
->
+<InstancedMesh>
+  <T.MeshStandardMaterial />
+  <T.CircleGeometry args={[0.02, 6]} />
   <!-- <Instance
     scale={0.05}
     position={normalizedPosition}
@@ -87,11 +67,7 @@
   /> -->
   {#each [...$bgStore] as dot, i (i)}
     <Instance
-      position={{
-        x: dot.x,
-        y: dot.y,
-        z: dot.z,
-      }}
+      position={[dot.x, dot.y, dot.z]}
       color={dot.color
         ? new Color(`#${dot.color.replace('#', '')}`)
         : '#333333'}

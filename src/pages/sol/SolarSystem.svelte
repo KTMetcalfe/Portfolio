@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { T, useFrame, OrbitControls } from '@threlte/core';
+  import { T, useFrame } from '@threlte/core';
   import Planet from './Planet.svelte';
   import { type PerspectiveCamera, Vector3, MathUtils, Euler } from 'three';
-  import type { OrbitControls as OrbitControlsType } from 'three/examples/jsm/controls/OrbitControls';
   import { PlanetStore, SolStore } from '../../components/stores/SolStore';
   import Stars from './Stars.svelte';
   import { tweened } from 'svelte/motion';
+  import { OrbitControls } from '@threlte/extras';
 
   $: revTime = $SolStore.secPerYear;
 
   let cameraRef: PerspectiveCamera;
-  let controlsRef: OrbitControlsType;
+  let controlsRef: OrbitControls;
 
   let textLookAt: Vector3 | null;
 

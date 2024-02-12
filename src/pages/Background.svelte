@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Canvas, T } from '@threlte/core';
-  import type { PerspectiveCamera } from 'three';
   import { bgStore } from '../components/stores/BackgroundStore';
   import { onMount } from 'svelte';
   import BackgroundMesh from './BackgroundMesh.svelte';

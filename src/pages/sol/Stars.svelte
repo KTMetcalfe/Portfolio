@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { T, useFrame } from '@threlte/core';
+  import { T, useTask } from '@threlte/core';
+  import { onMount } from 'svelte';
   import {
     AdditiveBlending,
     BufferAttribute,
@@ -100,11 +101,15 @@
   geometry.setAttribute('color', new BufferAttribute(color, 3));
   geometry.setAttribute('size', new BufferAttribute(size, 1));
 
-  useFrame(
-    (state) =>
-      material &&
-      (material.uniforms.time.value = state.clock.getElapsedTime() * speed)
-  );
+  let elapsedTime = 0;
+  onMount(() => {
+    useTask((delta) => {
+      elapsedTime += delta;
+      if (material) {
+        material.uniforms.time.value = elapsedTime * speed;
+      }
+    });
+  });
 </script>
 
 <T.Points {material} {geometry} />

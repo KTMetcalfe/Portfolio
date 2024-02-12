@@ -11,14 +11,6 @@ export default defineConfig({
   integrations: [tailwind(), svelte(), react()],
   adapter: vercel(),
   vite: {
-    resolve: {
-      alias: {
-        'three/examples/jsm/postprocessing/RenderPass':
-          'three/examples/jsm/postprocessing/RenderPass.js',
-        'three/examples/jsm/controls/OrbitControls':
-          'three/examples/jsm/controls/OrbitControls.js',
-        'three/src/math/MathUtils': 'three/src/math/MathUtils.js',
-      },
-    },
+    ssr: { noExternal: ['postprocessing'] },
   },
 });
