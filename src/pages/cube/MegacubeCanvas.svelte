@@ -5,7 +5,6 @@
   import { CubeStore } from "../../components/stores/CubeStore";
   import { OrbitControls } from "@threlte/extras";
   import { degToRad } from "three/src/math/MathUtils.js";
-  import { BoxGeometry } from "three";
 
   let size = 10;
 
@@ -42,28 +41,28 @@
 </script>
 
 <div>
-  <Canvas>
-    <T.PerspectiveCamera
-      makeDefault
-      fov={48}
-      position={[20, 20, 20]}
-      lookAt.y={0.5}
-    >
-      <OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} />
-    </T.PerspectiveCamera>
+  {#await createCube()}
+    <div class="w-full h-full flex justify-center items-center">
+      <h1 class="text-2xl">Loading cube...</h1>
+    </div>
+  {:then}
+    <Canvas>
+      <T.PerspectiveCamera
+        makeDefault
+        fov={48}
+        position={[20, 20, 20]}
+        lookAt.y={0.5}
+      >
+        <OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} />
+      </T.PerspectiveCamera>
 
-    <T.DirectionalLight castShadow position={[3, 10, 10]} />
-    <T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
-    <T.AmbientLight intensity={0.5} />
+      <T.DirectionalLight castShadow position={[3, 10, 10]} />
+      <T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
+      <T.AmbientLight intensity={0.5} />
 
-    {#await createCube()}
-      <div class="w-full h-full flex justify-center items-center">
-        <h1 class="text-2xl">Loading cube...</h1>
-      </div>
-    {:then}
       <Megacube {size} />
-    {/await}
-  </Canvas>
+    </Canvas>
+  {/await}
 </div>
 
 <style>

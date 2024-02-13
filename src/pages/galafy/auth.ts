@@ -1,9 +1,9 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
 function generateRandomString(length: number) {
-  let text = '';
+  let text = "";
   let possible =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
   for (let i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -16,10 +16,10 @@ const authorize = async (redirect_uri: string) => {
   const state = generateRandomString(16);
   // https://developer.spotify.com/documentation/web-api/concepts/scopes
   const scope =
-    'user-read-playback-state user-modify-playback-state user-read-currently-playing streaming user-read-playback-position user-top-read user-read-recently-played';
+    "user-read-playback-state user-modify-playback-state user-read-currently-playing streaming user-read-playback-position user-top-read user-read-recently-played";
 
   const query = new URLSearchParams({
-    response_type: 'code',
+    response_type: "code",
     client_id,
     scope,
     redirect_uri,
@@ -27,15 +27,13 @@ const authorize = async (redirect_uri: string) => {
   });
 
   return {
-    url: 'https://accounts.spotify.com/authorize?' + query,
+    url: "https://accounts.spotify.com/authorize?" + query,
     state,
   };
 };
 
-export const get: APIRoute = async ({ request }) => {
-  return {
-    body: JSON.stringify(
-      await authorize(new URL(request.url).origin + '/galafy')
-    ),
-  };
+export const GET: APIRoute = async ({ request }) => {
+  return new Response(
+    JSON.stringify(await authorize(new URL(request.url).origin + "/galafy"))
+  );
 };

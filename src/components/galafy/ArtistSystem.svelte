@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { T } from '@threlte/core';
+  import { T } from "@threlte/core";
   import type {
     DetailedArtistItem,
     DetailedTrackItem,
-  } from '../../components/helpers/spotify';
-  import { Color } from 'three';
-  import { tweened } from 'svelte/motion';
-  import { Instance, useTexture } from '@threlte/extras';
+  } from "../helpers/spotify";
+  import { Color } from "three";
+  import { tweened } from "svelte/motion";
+  import { Instance, useTexture } from "@threlte/extras";
 
   export let artist: DetailedArtistItem;
   export let position: [number, number, number];
-  export let color: string = '';
+  export let color: string = "";
   export let planets: Map<
-    DetailedTrackItem['id'],
+    DetailedTrackItem["id"],
     {
       track: DetailedTrackItem;
       position: [number, number, number];
@@ -31,7 +31,7 @@
   {#if isTopArtist}
     <T.Mesh position={[0, 5, 0]} scale={scale * 0.5}>
       <T.SphereGeometry args={[1, 32, 32]} />
-      <T.MeshStandardMaterial color={new Color('#ff0000')} />
+      <T.MeshStandardMaterial color={new Color("#ff0000")} />
     </T.Mesh>
   {/if}
   {#if isSelected}
@@ -43,12 +43,12 @@
         {#await texture then map}
           <T.MeshStandardMaterial {map} />
         {/await}
-      {:else if color !== ''}
+      {:else if color !== ""}
         <T.MeshStandardMaterial
-          color={new Color(`#${color.replace('#', '')}`)}
+          color={new Color(`#${color.replace("#", "")}`)}
         />
       {:else}
-        <T.MeshStandardMaterial color={new Color('#666666')} />
+        <T.MeshStandardMaterial color={new Color("#666666")} />
       {/if}
     </T.Mesh>
     <!-- Surrounding song planets -->
@@ -60,12 +60,12 @@
           {#await texture then map}
             <T.MeshStandardMaterial {map} />
           {/await}
-        {:else if color !== ''}
+        {:else if color !== ""}
           <T.MeshStandardMaterial
-            color={new Color(`#${color.replace('#', '')}`)}
+            color={new Color(`#${color.replace("#", "")}`)}
           />
         {:else}
-          <T.MeshStandardMaterial color={new Color('#666666')} />
+          <T.MeshStandardMaterial color={new Color("#666666")} />
         {/if}
       </T.Mesh>
     {/each}
@@ -74,18 +74,23 @@
   <Instance
     id="selector"
     scale={scale * (isSelected ? 0.5 : 10)}
-    on:pointerenter={() => {
+    on:pointerenter={(e) => {
+      e.stopPropagation();
       $scaleMultiple = 9;
     }}
-    on:pointerleave={() => {
+    on:pointerleave={(e) => {
+      e.stopPropagation();
       $scaleMultiple = 1;
     }}
-    on:click={clickCallback}
+    on:click={(e) => {
+      e.stopPropagation();
+      clickCallback();
+    }}
   />
   <!-- Simple star instance -->
   <Instance
     id="star"
     scale={scale * (isSelected ? 0.5 : $scaleMultiple)}
-    color={new Color(`#${color.replace('#', '')}`)}
+    color={new Color(`#${color.replace("#", "")}`)}
   />
 </T.Group>

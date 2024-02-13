@@ -71,7 +71,8 @@
   {/if}
   <T.Mesh
     rotation={[rotation.x, rotation.y, rotation.z]}
-    on:click={() => {
+    on:click={(e) => {
+      e.stopPropagation();
       if ($SolStore.selected.name !== name && name !== "Sun") {
         SolStore.select(name, true);
       }
