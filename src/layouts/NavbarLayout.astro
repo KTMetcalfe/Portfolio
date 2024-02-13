@@ -2,63 +2,61 @@
 const { title } = Astro.props;
 ---
 
-<html lang='en' class='h-full'>
+<html lang="en" class="h-full">
   <head>
-    <meta charset='utf-8' />
-    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title || "Kian's Portfolio"}</title>
   </head>
-  <body class='flex flex-col w-full h-full'>
+  <body class="flex flex-col w-full h-full">
     <script is:inline>
-      window.addEventListener('scroll', () => {
-        const navbar = document.getElementById('navbar');
+      window.addEventListener("scroll", () => {
+        const navbar = document.getElementById("navbar");
         if (window.scrollY == 0) {
-          navbar.classList.remove('shadow-md');
+          navbar.classList.remove("shadow-md");
         } else {
-          navbar.classList.add('shadow-md');
+          navbar.classList.add("shadow-md");
         }
       });
     </script>
-    <div id='navbar' class='sticky top-0 h-16 bg-base-100 z-50'>
-      <div class='navbar w-full'>
-        <div class='navbar-start'>
-          <a class='btn btn-ghost normal-case text-lg' href='/'>About Me</a>
-          <ul class='menu menu-horizontal px-1'>
-            <li tabindex='0'>
-              <a class='btn btn-ghost normal-case text-lg py-0'>
-                Projects
-                <svg
-                  class='fill-current'
-                  xmlns='http://www.w3.org/2000/svg'
-                  width='20'
-                  height='20'
-                  viewBox='0 0 24 24'
-                  ><path
-                    d='M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z'
-                  ></path></svg
-                >
-              </a>
-              <ul class='p-2 bg-base-200'>
-                <a class='btn btn-ghost normal-case text-md' href='/sol'>Sol</a>
-                <a class='btn btn-ghost normal-case text-md' href='/cube'
-                  >Cube</a
-                >
-                <a class='btn btn-ghost normal-case text-md' href='/galafy'
-                  >Galafy</a
-                >
-              </ul>
-            </li>
-          </ul>
+    <div id="navbar" class="sticky top-0 h-16 bg-base-100 z-50">
+      <div class="navbar w-full">
+        <div class="navbar-start">
+          <a class="btn btn-ghost normal-case text-lg" href="/">About Me</a>
+          <div class="relative group">
+            <a class="btn btn-ghost normal-case text-lg py-0">
+              Projects
+              <svg
+                class="fill-current"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                ><path
+                  d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
+                ></path></svg
+              >
+            </a>
+            <ul
+              class="menu hidden group-hover:flex p-2 bg-base-200 absolute w-full"
+            >
+              <a class="btn btn-ghost normal-case text-md" href="/sol">Sol</a>
+              <a class="btn btn-ghost normal-case text-md" href="/cube">Cube</a>
+              <a class="btn btn-ghost normal-case text-md" href="/galafy"
+                >Galafy</a
+              >
+            </ul>
+          </div>
         </div>
-        <div class='navbar-end'>
+        <div class="navbar-end">
           <a
-            class='btn btn-primary normal-case text-lg'
-            href='mailto:contact@kianm.net'>Contact Me</a
+            class="btn btn-primary normal-case text-lg"
+            href="mailto:contact@kianm.net">Contact Me</a
           >
         </div>
       </div>
     </div>
-    <div class='grow'>
+    <div class="grow">
       <slot />
     </div>
   </body>
