@@ -2,7 +2,7 @@
   import { Canvas, T } from "@threlte/core";
   import Megacube from "./Megacube.svelte";
   import { onMount } from "svelte";
-  import { CubeStore } from "../../components/stores/CubeStore";
+  import { CubeStore } from "../stores/CubeStore";
   import { OrbitControls } from "@threlte/extras";
   import { degToRad } from "three/src/math/MathUtils.js";
 

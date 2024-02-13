@@ -2,7 +2,7 @@
   // TODO: Smooth movement of cube shrinking "snake"
   import { T, useTask } from "@threlte/core";
   import Cube from "./Cube.svelte";
-  import { CubeStore } from "../../components/stores/CubeStore";
+  import { CubeStore } from "../stores/CubeStore";
   import { BoxGeometry, MeshStandardMaterial } from "three";
   import { InstancedMesh, interactivity } from "@threlte/extras";
 

@@ -2,7 +2,7 @@
   import { T } from "@threlte/core";
   import { spring } from "svelte/motion";
   import { Color, Vector2 } from "three";
-  import { CubeStore } from "../../components/stores/CubeStore";
+  import { CubeStore } from "../stores/CubeStore";
   import { Instance } from "@threlte/extras";
 
   export let posX: number;
