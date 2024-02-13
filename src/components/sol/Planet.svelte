@@ -1,7 +1,7 @@
 <script lang="ts">
   import { T } from "@threlte/core";
   import { Text, useTexture } from "@threlte/extras";
-  import { SolStore } from "../../components/stores/SolStore";
+  import { SolStore } from "../stores/SolStore";
   import { Vector3 } from "three";
 
   import sunImg from "../../images/2k_sun.jpg?url";

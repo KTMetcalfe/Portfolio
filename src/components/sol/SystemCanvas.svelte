@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Canvas } from "@threlte/core";
   import SolarSystem from "./SolarSystem.svelte";
-  import { SolStore } from "../../components/stores/SolStore";
+  import { SolStore } from "../stores/SolStore";
 </script>
 
 <!-- TODO: Add loading display -->

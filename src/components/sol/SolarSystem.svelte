@@ -2,7 +2,7 @@
   import { T, useTask } from "@threlte/core";
   import Planet from "./Planet.svelte";
   import { type PerspectiveCamera, Vector3, MathUtils, Euler } from "three";
-  import { PlanetStore, SolStore } from "../../components/stores/SolStore";
+  import { PlanetStore, SolStore } from "../stores/SolStore";
   import Stars from "./Stars.svelte";
   import { tweened } from "svelte/motion";
   import { OrbitControls, interactivity } from "@threlte/extras";

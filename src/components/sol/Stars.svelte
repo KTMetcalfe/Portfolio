@@ -1,6 +1,5 @@
 <script lang="ts">
   import { T, useTask } from "@threlte/core";
-  import { onMount } from "svelte";
   import {
     AdditiveBlending,
     BufferAttribute,
