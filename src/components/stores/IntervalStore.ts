@@ -6,9 +6,11 @@ export const runOnInterval = (callback: Function, interval: number) => {
   let intervalId: number | undefined;
 
   const start = () => {
-    intervalId = setInterval(() => {
-      callback();
-    }, interval);
+    intervalId = Number(
+      setInterval(() => {
+        callback();
+      }, interval)
+    );
     running.set(true);
   };
 

@@ -1,17 +1,18 @@
 <script lang="ts">
-  import { T, useTexture, Instance, InteractiveObject } from '@threlte/core';
+  import { T } from "@threlte/core";
   import type {
     DetailedArtistItem,
     DetailedTrackItem,
-  } from '../../components/helpers/spotify';
-  import { Color } from 'three';
-  import { tweened } from 'svelte/motion';
+  } from "../helpers/spotify";
+  import { Color } from "three";
+  import { tweened } from "svelte/motion";
+  import { Instance, useTexture } from "@threlte/extras";
 
   export let artist: DetailedArtistItem;
   export let position: [number, number, number];
-  export let color: string = '';
+  export let color: string = "";
   export let planets: Map<
-    DetailedTrackItem['id'],
+    DetailedTrackItem["id"],
     {
       track: DetailedTrackItem;
       position: [number, number, number];
@@ -28,24 +29,26 @@
 <T.Group {position}>
   <!-- TEMPORARY Identifier for top artist -->
   {#if isTopArtist}
-    <T.Mesh position={[0, 5, 0]} scale={scale * 0.5} let:ref>
+    <T.Mesh position={[0, 5, 0]} scale={scale * 0.5}>
       <T.SphereGeometry args={[1, 32, 32]} />
-      <T.MeshStandardMaterial color={new Color('#ff0000')} />
+      <T.MeshStandardMaterial color={new Color("#ff0000")} />
     </T.Mesh>
   {/if}
   {#if isSelected}
     <!-- Artist as sun -->
-    <T.Mesh scale={scale * $scaleMultiple} let:ref>
-      <InteractiveObject interactive object={ref} />
+    <T.Mesh scale={scale * $scaleMultiple}>
       <T.SphereGeometry args={[1, 32, 32]} />
       {#if isSelected && artist.images.length > 0}
-        <T.MeshStandardMaterial map={useTexture(artist.images[0].url)} />
-      {:else if color !== ''}
+        {@const texture = useTexture(artist.images[0].url)}
+        {#await texture then map}
+          <T.MeshStandardMaterial {map} />
+        {/await}
+      {:else if color !== ""}
         <T.MeshStandardMaterial
-          color={new Color(`#${color.replace('#', '')}`)}
+          color={new Color(`#${color.replace("#", "")}`)}
         />
       {:else}
-        <T.MeshStandardMaterial color={new Color('#666666')} />
+        <T.MeshStandardMaterial color={new Color("#666666")} />
       {/if}
     </T.Mesh>
     <!-- Surrounding song planets -->
@@ -53,15 +56,16 @@
       <T.Mesh position={planet[1].position} scale={scale * 0.5}>
         <T.SphereGeometry args={[1, 32, 32]} />
         {#if isSelected && planet[1].track.album.images.length > 0}
+          {@const texture = useTexture(planet[1].track.album.images[0].url)}
+          {#await texture then map}
+            <T.MeshStandardMaterial {map} />
+          {/await}
+        {:else if color !== ""}
           <T.MeshStandardMaterial
-            map={useTexture(planet[1].track.album.images[0].url)}
-          />
-        {:else if color !== ''}
-          <T.MeshStandardMaterial
-            color={new Color(`#${color.replace('#', '')}`)}
+            color={new Color(`#${color.replace("#", "")}`)}
           />
         {:else}
-          <T.MeshStandardMaterial color={new Color('#666666')} />
+          <T.MeshStandardMaterial color={new Color("#666666")} />
         {/if}
       </T.Mesh>
     {/each}
@@ -70,18 +74,23 @@
   <Instance
     id="selector"
     scale={scale * (isSelected ? 0.5 : 10)}
-    on:pointerenter={() => {
+    on:pointerenter={(e) => {
+      e.stopPropagation();
       $scaleMultiple = 9;
     }}
-    on:pointerleave={() => {
+    on:pointerleave={(e) => {
+      e.stopPropagation();
       $scaleMultiple = 1;
     }}
-    on:click={clickCallback}
+    on:click={(e) => {
+      e.stopPropagation();
+      clickCallback();
+    }}
   />
   <!-- Simple star instance -->
   <Instance
     id="star"
     scale={scale * (isSelected ? 0.5 : $scaleMultiple)}
-    color={new Color(`#${color.replace('#', '')}`)}
+    color={new Color(`#${color.replace("#", "")}`)}
   />
 </T.Group>
