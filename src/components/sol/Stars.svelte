@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { T, useFrame } from '@threlte/core';
+  import { T, useTask } from "@threlte/core";
   import {
     AdditiveBlending,
     BufferAttribute,
@@ -8,7 +8,7 @@
     ShaderMaterial,
     Spherical,
     Vector3,
-  } from 'three';
+  } from "three";
 
   // A lot of code taken from @react-three/drei Stars component
   // https://github.com/pmndrs/drei/blob/master/src/core/Stars.tsx
@@ -96,15 +96,17 @@
   material.vertexColors = true;
 
   const geometry = new BufferGeometry();
-  geometry.setAttribute('position', new BufferAttribute(position, 3));
-  geometry.setAttribute('color', new BufferAttribute(color, 3));
-  geometry.setAttribute('size', new BufferAttribute(size, 1));
+  geometry.setAttribute("position", new BufferAttribute(position, 3));
+  geometry.setAttribute("color", new BufferAttribute(color, 3));
+  geometry.setAttribute("size", new BufferAttribute(size, 1));
 
-  useFrame(
-    (state) =>
-      material &&
-      (material.uniforms.time.value = state.clock.getElapsedTime() * speed)
-  );
+  let elapsedTime = 0;
+  useTask((delta) => {
+    elapsedTime += delta;
+    if (material) {
+      material.uniforms.time.value = elapsedTime * speed;
+    }
+  });
 </script>
 
 <T.Points {material} {geometry} />

@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { Canvas, T } from '@threlte/core';
-  import type { PerspectiveCamera } from 'three';
-  import { bgStore } from '../components/stores/BackgroundStore';
-  import { onMount } from 'svelte';
-  import BackgroundMesh from './BackgroundMesh.svelte';
+  import { Canvas, T } from "@threlte/core";
+  import { bgStore } from "../components/stores/BackgroundStore";
+  import { onMount } from "svelte";
+  import BackgroundMesh from "./BackgroundMesh.svelte";
 
   onMount(() => {
     // Empty the store on unmount
@@ -12,26 +11,26 @@
     };
   });
 
-  const size_x = 20;
-  const size_y = 15;
+  const size_x = 16;
+  const size_y = 10;
+
+  function generatePastelColor() {
+    const hue = Math.floor(Math.random() * 40);
+    const saturation = 60 + Math.floor(Math.random() * 20);
+    const lightness = 70 + Math.floor(Math.random() * 10);
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  }
 
   const createBackground = () =>
     new Promise<void>((resolve) => {
-      const half_x = Math.floor(size_x / 2);
-      const half_y = Math.floor(size_y / 2);
-
       bgStore.update((state) => {
-        for (let i = -half_x; i < size_x / 2; i += 0.5) {
-          for (let j = -half_y; j < size_y / 2; j += 0.5) {
+        for (let i = -size_x / 2; i <= size_x / 2; i += 0.25) {
+          for (let j = -size_y / 2; j <= size_y / 2; j += 0.25) {
             state.add({
               x: i,
               y: j,
               z: 0,
-              color:
-                '#' +
-                Math.floor(Math.random() * 0xffffff)
-                  .toString(16)
-                  .padStart(6, '0'),
+              color: generatePastelColor(),
             });
           }
         }

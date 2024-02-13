@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { Canvas, OrbitControls, T } from '@threlte/core';
-  import { degToRad } from 'three/src/math/MathUtils';
-  import Megacube from './Megacube.svelte';
-  import { onMount } from 'svelte';
-  import { CubeStore } from '../../components/stores/CubeStore';
+  import { Canvas, T } from "@threlte/core";
+  import Megacube from "./Megacube.svelte";
+  import { onMount } from "svelte";
+  import { CubeStore } from "../stores/CubeStore";
+  import { OrbitControls } from "@threlte/extras";
+  import { degToRad } from "three/src/math/MathUtils.js";
 
   let size = 10;
 
@@ -25,10 +26,10 @@
                 y: j,
                 z: k,
                 color:
-                  '#' +
+                  "#" +
                   Math.floor(Math.random() * 0xffffff)
                     .toString(16)
-                    .padStart(6, '0'),
+                    .padStart(6, "0"),
               });
             }
           }
@@ -46,17 +47,18 @@
     </div>
   {:then}
     <Canvas>
-      <T.PerspectiveCamera makeDefault fov={48} position={[20, 20, 20]}>
-        <OrbitControls
-          maxPolarAngle={degToRad(80)}
-          enableZoom={false}
-          target={{ y: 0.5 }}
-        />
+      <T.PerspectiveCamera
+        makeDefault
+        fov={48}
+        position={[20, 20, 20]}
+        lookAt.y={0.5}
+      >
+        <OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} />
       </T.PerspectiveCamera>
 
       <T.DirectionalLight castShadow position={[3, 10, 10]} />
       <T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
-      <T.AmbientLight intensity={0.2} />
+      <T.AmbientLight intensity={0.5} />
 
       <Megacube {size} />
     </Canvas>

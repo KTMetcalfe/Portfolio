@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { Instance, InteractiveObject, T } from '@threlte/core';
-  import { spring } from 'svelte/motion';
-  import { Color } from 'three';
-  import { CubeStore } from '../../components/stores/CubeStore';
+  import { T } from "@threlte/core";
+  import { spring } from "svelte/motion";
+  import { Color, Vector2 } from "three";
+  import { CubeStore } from "../stores/CubeStore";
+  import { Instance } from "@threlte/extras";
 
   export let posX: number;
   export let posY: number;
   export let posZ: number;
-  export let color = '#333333';
+  export let color = "#333333";
   export let posSelected:
     | { posX: number; posY: number; posZ: number }
     | undefined = undefined;
@@ -52,19 +53,22 @@
   <Instance
     id="selector"
     scale={1}
-    on:pointerenter={() => {
-      tmpColor = '#666666';
+    on:pointerenter={(e) => {
+      e.stopPropagation();
+      tmpColor = "#ffffff";
     }}
-    on:pointerleave={() => {
+    on:pointerleave={(e) => {
+      e.stopPropagation();
       tmpColor = color;
     }}
-    on:pointerdown={() => {
+    on:click={(e) => {
+      e.stopPropagation();
       CubeStore.remove(posX, posY, posZ);
     }}
   />
   <Instance
     id="cube"
     scale={$scale}
-    color={new Color(`#${tmpColor.replace('#', '')}`)}
+    color={new Color(`#${tmpColor.replace("#", "")}`)}
   />
 </T.Group>
