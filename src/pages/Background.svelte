@@ -26,6 +26,8 @@
         onError={() => {
           loading_error = true;
         }}
+        width={512}
+        height={512}
       />
     {:else}
       <DotBackground />
