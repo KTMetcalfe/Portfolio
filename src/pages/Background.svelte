@@ -1,21 +1,39 @@
 <script lang="ts">
-  import { Canvas } from "@threlte/core";
+  import { Canvas, T } from "@threlte/core";
   import NewBackground from "./NewBackground.svelte";
+  import DotBackground from "./DotBackground.svelte";
 
   let curlFactor = 0.45;
   let noiseScale = 0.35;
   let noiseOffset = 0;
 
   let showUtilities = false;
+
+  let loading_error = false;
 </script>
 
 <div class="fixed -z-50 w-full h-full">
   <Canvas>
-    <NewBackground {curlFactor} {noiseScale} {noiseOffset} />
+    <T.PerspectiveCamera makeDefault position={[0, 0, 10]} />
+    <T.AmbientLight intensity={0.75} />
+    <T.DirectionalLight position={[0, 0, 20]} />
+
+    {#if !loading_error}
+      <NewBackground
+        {curlFactor}
+        {noiseScale}
+        {noiseOffset}
+        onError={() => {
+          loading_error = true;
+        }}
+      />
+    {:else}
+      <DotBackground />
+    {/if}
   </Canvas>
 </div>
 
-{#if showUtilities}
+{#if !loading_error && showUtilities}
   <div
     class="rounded-md bg-slate-700 p-4 absolute z-50 top-20 right-10 opacity-70"
   >

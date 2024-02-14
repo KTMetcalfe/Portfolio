@@ -19,14 +19,62 @@
   import BackgroundMesh from "./BackgroundMesh.svelte";
   import { OrbitControls } from "@threlte/extras";
 
+  export let width = 512;
+  export let height = 512;
+
+  export let curlFactor = 0.4;
+  export let noiseScale = 0.7;
+  export let noiseOffset = 0;
+
+  export let onError: (error: unknown) => void = () => {};
+
   const { scene, camera, renderer } = useThrelte();
+
+  let FBO: ReturnType<typeof createFBO> | null = null;
+
+  onMount(() => {
+    try {
+      FBO = init();
+    } catch (error) {
+      console.error(error);
+      onError(error);
+    }
+  });
+
+  let elapsedTime = 0;
+  useTask((delta) => {
+    elapsedTime += delta;
+
+    if (FBO) {
+      // FBO.particles.position.set(
+      //   Math.sin(elapsedTime),
+      //   Math.cos(elapsedTime),
+      //   0
+      // );
+      // FBO.particles.rotation.set(
+      //   Math.sin(elapsedTime),
+      //   Math.cos(elapsedTime),
+      //   0
+      // );
+
+      // FBO.simulationMaterial.uniforms.timer.value =
+      //   (Math.sin(elapsedTime) + 1) / 2;
+      // FBO.simulationMaterial.uniforms.curlFactor.value =
+      //   (-Math.sin(elapsedTime) + 1) / 4;
+
+      FBO.simulationMaterial.uniforms.curlFactor.value = curlFactor;
+      FBO.simulationMaterial.uniforms.noiseScale.value = noiseScale;
+      FBO.simulationMaterial.uniforms.noiseOffset.value = new THREE.Vector3(
+        elapsedTime * 0.5 + noiseOffset,
+        elapsedTime * 0.5 + noiseOffset,
+        elapsedTime * 0.5 + noiseOffset
+      );
+    }
+    update(elapsedTime);
+  });
 
   //initializes the FBO particles object
   const init = () => {
-    // width and height of FBO
-    const width = 512;
-    const height = 512;
-
     // populate a Float32Array of random positions
     var cubeData = getRandomCubeData(width, height, 3, true);
     var sphereData = getRandomSphereData(width, height, 3, true);
@@ -95,107 +143,9 @@
     return FBO;
   };
 
-  let loading_error: string | null = null;
-  let FBO: ReturnType<typeof createFBO> | null = null;
-
   const update = (time: number) => {
     if (FBO === null) return;
     FBO.update(time);
     renderer.render(scene, $camera);
   };
-
-  let elapsedTime = 0;
-  useTask((delta) => {
-    elapsedTime += delta;
-
-    if (FBO) {
-      // FBO.particles.position.set(
-      //   Math.sin(elapsedTime),
-      //   Math.cos(elapsedTime),
-      //   0
-      // );
-      // FBO.particles.rotation.set(
-      //   Math.sin(elapsedTime),
-      //   Math.cos(elapsedTime),
-      //   0
-      // );
-
-      // FBO.simulationMaterial.uniforms.timer.value =
-      //   (Math.sin(elapsedTime) + 1) / 2;
-      // FBO.simulationMaterial.uniforms.curlFactor.value =
-      //   (-Math.sin(elapsedTime) + 1) / 4;
-
-      FBO.simulationMaterial.uniforms.curlFactor.value = curlFactor;
-      FBO.simulationMaterial.uniforms.noiseScale.value = noiseScale;
-      FBO.simulationMaterial.uniforms.noiseOffset.value = new THREE.Vector3(
-        elapsedTime * 0.5 + noiseOffset,
-        elapsedTime * 0.5 + noiseOffset,
-        elapsedTime * 0.5 + noiseOffset
-      );
-    }
-    update(elapsedTime);
-  });
-
-  export let curlFactor = 0.4;
-  export let noiseScale = 0.7;
-  export let noiseOffset = 0;
-
-  onMount(() => {
-    try {
-      FBO = init();
-    } catch (error) {
-      if (error instanceof Error) loading_error = error.message;
-      console.error(error);
-    }
-
-    // Empty the store on unmount
-    return () => {
-      bgStore.clear();
-      if (FBO) scene.remove(FBO.particles);
-    };
-  });
-
-  // For error or outdated browser
-  const size_x = 16;
-  const size_y = 10;
-
-  function generatePastelColor() {
-    const hue = Math.floor(Math.random() * 40);
-    const saturation = 60 + Math.floor(Math.random() * 20);
-    const lightness = 70 + Math.floor(Math.random() * 10);
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-  }
-
-  const createBackground = () =>
-    new Promise<void>((resolve) => {
-      bgStore.update((state) => {
-        for (let i = -size_x / 2; i <= size_x / 2; i += 0.25) {
-          for (let j = -size_y / 2; j <= size_y / 2; j += 0.25) {
-            state.add({
-              x: i,
-              y: j,
-              z: 0,
-              color: generatePastelColor(),
-            });
-          }
-        }
-        return state;
-      });
-
-      resolve();
-    });
 </script>
-
-<T.PerspectiveCamera makeDefault position={[0, 0, 10]} />
-<T.AmbientLight intensity={0.75} />
-<T.DirectionalLight position={[0, 0, 20]} />
-
-{#if loading_error !== null}
-  <T.Mesh>
-    <T.PlaneGeometry args={[size_x, size_y]} />
-    <T.MeshStandardMaterial transparent opacity={0} />
-  </T.Mesh>
-  {#await createBackground() then}
-    <BackgroundMesh />
-  {/await}
-{/if}
