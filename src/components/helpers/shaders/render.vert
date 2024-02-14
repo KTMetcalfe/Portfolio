@@ -1,6 +1,7 @@
 //vertex shader
 uniform sampler2D positions;//RenderTarget containing the transformed positions
 uniform float pointSize;//size
+varying float size;
 void main() {
  
     //the mesh is a nomrliazed square so the uvs = the xy positions of the vertices
@@ -11,5 +12,5 @@ void main() {
     gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );
  
     //sets the point size
-    gl_PointSize = pointSize;
+    gl_PointSize = size = max( 1., ( step( 1. - ( 1. / 512. ), position.x ) ) * pointSize );
 }

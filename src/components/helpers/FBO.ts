@@ -29,7 +29,7 @@ export const createFBO = (
     simulationMaterial.uniforms.uTime.value = time;
   };
 
-  return { update, particles };
+  return { update, particles, simulationMaterial };
 };
 
 const checkHardware = (gl: WebGLRenderingContext | WebGL2RenderingContext) => {
@@ -126,13 +126,13 @@ const createParticles = (
 };
 
 // Randomly positions points on a sphere
-const getRandomSpherePoint = () => {
+const getRandomSpherePoint = (surfaceOnly = false) => {
   const u = Math.random();
   const v = Math.random();
 
   const theta = u * 2.0 * Math.PI;
   const phi = Math.acos(2.0 * v - 1.0);
-  const r = Math.cbrt(Math.random());
+  const r = surfaceOnly ? 1 : Math.cbrt(Math.random());
 
   const sinTheta = Math.sin(theta);
   const cosTheta = Math.cos(theta);
@@ -152,14 +152,15 @@ const getRandomSpherePoint = () => {
 export const getRandomSphereData = (
   width: number,
   height: number,
-  size: number
+  size: number,
+  surfaceOnly = false
 ) => {
   // Populate a Float32Array of random positions
   let length = width * height * 4;
   let data = new Float32Array(length);
   for (let i = 0; i < length; i += 4) {
     // Random positions inside a sphere
-    const point = getRandomSpherePoint();
+    const point = getRandomSpherePoint(surfaceOnly);
     data[i + 0] = point.x * size;
     data[i + 1] = point.y * size;
     data[i + 2] = point.z * size;
@@ -169,14 +170,30 @@ export const getRandomSphereData = (
   return data;
 };
 
-export const getRandomCubeData = (width: number, height: number, size: number) => {
+export const getRandomCubeData = (
+  width: number,
+  height: number,
+  size: number,
+  surfaceOnly = false
+) => {
   var length = width * height * 4;
   var data = new Float32Array(length);
   for (var i = 0; i < length; i += 4) {
-    data[i + 0] = (Math.random() - 0.5) * size;
-    data[i + 1] = (Math.random() - 0.5) * size;
-    data[i + 2] = (Math.random() - 0.5) * size;
-    data[i + 3] = 1;
+    if (surfaceOnly) {
+      const fixedDimension = Math.floor(Math.random() * 3);
+      const fixedValue = Math.random() < 0.5 ? -1 : 1;
+
+      // Randomly generate the other two dimensions
+      data[i + fixedDimension] = fixedValue; // Set one dimension to its max/min
+      data[i + ((fixedDimension + 1) % 3)] = (Math.random() - 0.5) * size; // Other dimensions
+      data[i + ((fixedDimension + 2) % 3)] = (Math.random() - 0.5) * size; // Other dimensions
+      data[i + 3] = 1;
+    } else {
+      data[i + 0] = (Math.random() - 0.5) * size;
+      data[i + 1] = (Math.random() - 0.5) * size;
+      data[i + 2] = (Math.random() - 0.5) * size;
+      data[i + 3] = 1;
+    }
   }
   return data;
 };

@@ -10,6 +10,8 @@
   import simFragment from "../components/helpers/shaders/simulation.frag";
   import renderVertex from "../components/helpers/shaders/render.vert";
   import renderFragment from "../components/helpers/shaders/render.frag";
+  import simMorphFragment from "../components/helpers/shaders/simulation_morph.frag";
+  import simCurlFragment from "../components/helpers/shaders/simulation_curl.frag";
   import { useTask, useThrelte } from "@threlte/core";
   import { onMount } from "svelte";
   import { bgStore } from "../components/stores/BackgroundStore";
@@ -22,27 +24,46 @@
   //initializes the FBO particles object
   const init = () => {
     // width and height of FBO
-    const width = 256;
-    const height = 256;
+    const width = 512;
+    const height = 512;
 
     // populate a Float32Array of random positions
-    var data = getRandomCubeData(width, height, 2);
+    var cubeData = getRandomCubeData(width, height, 2, true);
+    var sphereData = getRandomSphereData(width, height, 2, true);
 
     //convertes it to a FloatTexture
-    var positions = new THREE.DataTexture(
-      data,
+    var cubeTexture = new THREE.DataTexture(
+      cubeData,
       width,
       height,
       THREE.RGBAFormat,
       THREE.FloatType
     );
-    positions.needsUpdate = true;
+    cubeTexture.needsUpdate = true;
+    var sphereTexture = new THREE.DataTexture(
+      sphereData,
+      width,
+      height,
+      THREE.RGBAFormat,
+      THREE.FloatType
+    );
+    sphereTexture.needsUpdate = true;
 
     //simulation shader used to update the particles' positions
     var simulationShader = new THREE.ShaderMaterial({
-      uniforms: { positions: { value: positions }, uTime: { value: 0 } },
+      uniforms: {
+        positions: { value: sphereTexture },
+        timer: { value: 0 },
+        uTime: { value: 0 },
+        curlFactor: { value: 0.5 },
+        noiseScale: { value: 0.5 },
+        noiseOffset: {
+          value: new THREE.Vector3(noiseOffset, noiseOffset, noiseOffset),
+        },
+        pointSize: { value: 2 },
+      },
       vertexShader: simVertex,
-      fragmentShader: simFragment,
+      fragmentShader: simCurlFragment,
     });
 
     //render shader to display the particles on screen
@@ -51,10 +72,14 @@
       uniforms: {
         positions: { value: null },
         pointSize: { value: 2 },
-        uTime: { value: 0 },
+        big: { value: new THREE.Vector3(0.75, 0.5, 0.5) },
+        small: { value: new THREE.Vector3(1, 0.5, 0) },
       },
       vertexShader: renderVertex,
       fragmentShader: renderFragment,
+      transparent: true,
+      // side: THREE.DoubleSide,
+      // blending: THREE.AdditiveBlending,
     });
 
     //init the FBO
@@ -66,8 +91,6 @@
       renderShader
     );
     scene.add(FBO.particles);
-
-    FBO.update(0);
 
     return FBO;
   };
@@ -84,20 +107,36 @@
   let elapsedTime = 0;
   useTask((delta) => {
     elapsedTime += delta;
-    FBO?.particles.position.set(
-      Math.sin(elapsedTime),
-      Math.cos(elapsedTime),
-      0
-    );
-    FBO?.particles.rotation.set(
-      Math.sin(elapsedTime),
-      Math.cos(elapsedTime),
-      0
-    );
+
+    if (FBO) {
+      // FBO.particles.position.set(
+      //   Math.sin(elapsedTime),
+      //   Math.cos(elapsedTime),
+      //   0
+      // );
+      // FBO.particles.rotation.set(
+      //   Math.sin(elapsedTime),
+      //   Math.cos(elapsedTime),
+      //   0
+      // );
+
+      //   FBO.simulationMaterial.uniforms.timer.value =
+      //     (Math.sin(elapsedTime) + 1) / 2;
+      FBO.simulationMaterial.uniforms.curlFactor.value = curlFactor;
+      FBO.simulationMaterial.uniforms.noiseScale.value = noiseScale;
+      FBO.simulationMaterial.uniforms.noiseOffset.value = new THREE.Vector3(
+        elapsedTime * 0.5 + noiseOffset,
+        elapsedTime * 0.5 + noiseOffset,
+        elapsedTime * 0.5 + noiseOffset
+      );
+    }
     update(elapsedTime);
   });
 
-  // For error or outdated browser
+  export let curlFactor = 0.4;
+  export let noiseScale = 0.7;
+  export let noiseOffset = 0;
+
   onMount(() => {
     try {
       FBO = init();
@@ -113,6 +152,7 @@
     };
   });
 
+  // For error or outdated browser
   const size_x = 16;
   const size_y = 10;
 
@@ -143,13 +183,11 @@
     });
 </script>
 
-{#if loading_error === null}
-  <T.PerspectiveCamera makeDefault position={[0, 0, 10]} />
-  <T.AmbientLight intensity={0.75} />
-{:else}
-  <T.PerspectiveCamera makeDefault position={[0, 0, 10]} />
-  <T.DirectionalLight position={[0, 0, 20]} />
+<T.PerspectiveCamera makeDefault position={[0, 0, 10]} />
+<T.AmbientLight intensity={0.75} />
+<T.DirectionalLight position={[0, 0, 20]} />
 
+{#if loading_error !== null}
   <T.Mesh>
     <T.PlaneGeometry args={[size_x, size_y]} />
     <T.MeshStandardMaterial transparent opacity={0} />
