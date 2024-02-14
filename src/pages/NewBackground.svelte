@@ -28,8 +28,8 @@
     const height = 512;
 
     // populate a Float32Array of random positions
-    var cubeData = getRandomCubeData(width, height, 2, true);
-    var sphereData = getRandomSphereData(width, height, 2, true);
+    var cubeData = getRandomCubeData(width, height, 3, true);
+    var sphereData = getRandomSphereData(width, height, 3, true);
 
     //convertes it to a FloatTexture
     var cubeTexture = new THREE.DataTexture(
@@ -53,14 +53,14 @@
     var simulationShader = new THREE.ShaderMaterial({
       uniforms: {
         positions: { value: sphereTexture },
+        // textureB: { value: cubeTexture },
         timer: { value: 0 },
         uTime: { value: 0 },
-        curlFactor: { value: 0.5 },
-        noiseScale: { value: 0.5 },
+        curlFactor: { value: curlFactor },
+        noiseScale: { value: noiseScale },
         noiseOffset: {
           value: new THREE.Vector3(noiseOffset, noiseOffset, noiseOffset),
         },
-        pointSize: { value: 2 },
       },
       vertexShader: simVertex,
       fragmentShader: simCurlFragment,
@@ -120,8 +120,11 @@
       //   0
       // );
 
-      //   FBO.simulationMaterial.uniforms.timer.value =
-      //     (Math.sin(elapsedTime) + 1) / 2;
+      // FBO.simulationMaterial.uniforms.timer.value =
+      //   (Math.sin(elapsedTime) + 1) / 2;
+      // FBO.simulationMaterial.uniforms.curlFactor.value =
+      //   (-Math.sin(elapsedTime) + 1) / 4;
+
       FBO.simulationMaterial.uniforms.curlFactor.value = curlFactor;
       FBO.simulationMaterial.uniforms.noiseScale.value = noiseScale;
       FBO.simulationMaterial.uniforms.noiseOffset.value = new THREE.Vector3(

@@ -181,7 +181,7 @@ export const getRandomCubeData = (
   for (var i = 0; i < length; i += 4) {
     if (surfaceOnly) {
       const fixedDimension = Math.floor(Math.random() * 3);
-      const fixedValue = Math.random() < 0.5 ? -1 : 1;
+      const fixedValue = Math.random() < 0.5 ? -size / 2 : size / 2;
 
       // Randomly generate the other two dimensions
       data[i + fixedDimension] = fixedValue; // Set one dimension to its max/min
