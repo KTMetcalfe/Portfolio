@@ -28,6 +28,7 @@
         }}
         width={512}
         height={512}
+        type={'sphere'}
       />
     {:else}
       <DotBackground />

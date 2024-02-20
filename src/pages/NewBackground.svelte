@@ -26,6 +26,8 @@
   export let noiseScale = 0.7;
   export let noiseOffset = 0;
 
+  export let type: "cube" | "sphere" = "sphere";
+
   export let onError: (error: unknown) => void = () => {};
 
   const { scene, camera, renderer } = useThrelte();
@@ -100,7 +102,7 @@
     //simulation shader used to update the particles' positions
     var simulationShader = new THREE.ShaderMaterial({
       uniforms: {
-        positions: { value: sphereTexture },
+        positions: { value: (type === "cube" ? cubeTexture : sphereTexture) },
         // textureB: { value: cubeTexture },
         timer: { value: 0 },
         uTime: { value: 0 },
