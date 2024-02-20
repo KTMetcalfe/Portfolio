@@ -1,11 +1,11 @@
 ---
-import NavbarLayout from '../layouts/NavbarLayout.astro';
-import { inject } from '@vercel/analytics';
+import NavbarLayout from "../layouts/NavbarLayout.astro";
+import { inject } from "@vercel/analytics";
 
-import galafy_image from '../images/galafy.jpg?url';
-import cube_image from '../images/cube.jpg?url';
-import sol_image from '../images/sol.jpg?url';
-import Background from './Background.svelte';
+import galafy_image from "../images/galafy.jpg?url";
+import cube_image from "../images/cube.jpg?url";
+import sol_image from "../images/sol.jpg?url";
+import Background from "./Background.svelte";
 
 inject();
 ---
@@ -17,71 +17,76 @@ inject();
  -->
 <Background client:load />
 <NavbarLayout>
-  <div class='w-full h-full' id='pageroot'>
-    <div class='py-24 px-24'>
-      <div class='flex flex-wrap'>
-        <div class='max-w-sm'>
-          <h1 class='text-4xl'>
-            My name<br />is <span class='font-bold'>Kian</span>
+  <div class="w-full h-full" id="pageroot">
+    <div class="py-24 px-24">
+      <div class="flex flex-wrap">
+        <div class="max-w-sm">
+          <h1 class="text-4xl">
+            My name<br />is <span class="font-bold">Kian</span>
           </h1>
           <br />
-          <p class='text-xl'>
+          <p class="text-xl">
             I'm a software engineer and web developer with 3+ years of
             experience.
           </p>
         </div>
-        <div class='flex-grow'>
+        <div class="flex-grow">
           <!-- TODO: Photo of me -->
         </div>
       </div>
-      <div class='mt-48'>
-        <h2 class='text-2xl'>Latest Projects</h2>
+      <div class="mt-48">
+        <h2 class="text-2xl">Latest Projects</h2>
         <br />
-        <div class='flex flex-wrap gap-4 justify-between'>
+        <div class="flex flex-wrap gap-4 justify-between">
           {
             [
               {
-                title: 'Cube',
+                title: "Cube",
                 description:
-                  'A rotating set of cubes being randomly selected. Cubes can be removed by tapping on them.',
+                  "A rotating set of cubes being randomly selected. Cubes can be removed by tapping on them.",
                 image_url: cube_image,
-                link: '/cube',
-                tech: ['Svelte', 'TypeScript', 'Three.js'],
+                link: "/cube",
+                tech: ["Svelte", "TypeScript", "Three.js"],
               },
               {
-                title: 'Sol',
+                title: "Sol",
                 description:
-                  'A semi-accurate representation of our solar system. Planets that can be tapped on to follow them.',
+                  "A semi-accurate representation of our solar system. Planets that can be tapped on to follow them.",
                 image_url: sol_image,
-                link: '/sol',
-                tech: ['Svelte', 'TypeScript', 'Three.js'],
+                link: "/sol",
+                tech: ["Svelte", "TypeScript", "Three.js"],
               },
               {
-                title: 'Galafy (WIP)',
+                title: "Galafy (WIP)",
                 description:
-                  'A new way to explore your Spotify library. View a galaxy of music where artists are stars and their popular songs are planets.',
+                  "A new way to explore your Spotify library. View a galaxy of music where artists are stars and their popular songs are planets.",
                 image_url: galafy_image,
-                link: '/galafy',
-                tech: ['Svelte', 'TypeScript', 'Spotify API', 'Three.js'],
+                link: "/galafy",
+                tech: ["Svelte", "TypeScript", "Spotify API", "Three.js"],
               },
             ].map((p) => (
-              <div class='card card-compact w-96 image-full'>
-                <figure>
-                  <img src={p.image_url} alt='Project Image' />
-                </figure>
-                <div class='card-body'>
-                  <a class='card-title btn btn-ghost normal-case' href={p.link}>
-                    {p.title}
-                  </a>
-                  <p>{p.description}</p>
-                  <br />
-                  <div class='flex flex-wrap gap-2'>
-                    {p.tech.map((t) => (
-                      <span class='badge badge-accent'>{t}</span>
-                    ))}
+              <a
+                href={p.link}
+                class="hover:scale-105 hover:shadow-xl cursor-pointer"
+              >
+                <div class="card card-compact w-96 image-full">
+                  <figure>
+                    <img src={p.image_url} alt="Project Image" />
+                  </figure>
+                  <div class="card-body">
+                    <div class="card-title flex justify-center text-2xl p-2 bg-base-200 rounded-md bg-opacity-50">
+                      {p.title}
+                    </div>
+                    <p>{p.description}</p>
+                    <br />
+                    <div class="flex flex-wrap gap-2">
+                      {p.tech.map((t) => (
+                        <span class="badge badge-accent">{t}</span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </a>
               // <div class='flex flex-wrap'>
               //   <div class='max-w-sm'>
               //     <h3 class='text-xl'>{p.title}</h3>

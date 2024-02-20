@@ -3,6 +3,7 @@ import tailwind from "@astrojs/tailwind";
 import svelte from "@astrojs/svelte";
 
 import vercel from "@astrojs/vercel/serverless";
+import vitePluginString from "vite-plugin-string";
 
 // https://astro.build/config
 export default defineConfig({
@@ -17,5 +18,6 @@ export default defineConfig({
       },
     },
     ssr: { noExternal: ["postprocessing"] },
+    plugins: [vitePluginString()],
   },
 });
