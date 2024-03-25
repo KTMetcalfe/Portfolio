@@ -33,12 +33,17 @@
   };
 
   const resetGame = () => {
-    tower = [generateGrid(20, 20)];
-    elapsedFrames = 0;
-    generations = 0;
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        tower = [generateGrid(20, 20)];
+        elapsedFrames = 0;
+        generations = 0;
+        resolve();
+      }, 2000);
+    });
   };
 
-  const { start, stop, started, task } = useTask((delta) => {
+  const { start, stop, started, task } = useTask(async (delta) => {
     if (elapsedFrames % (60 / generations_per_second) === 0) {
       const newLevel = [];
       const lastLevel = tower[tower.length - 1];
@@ -86,7 +91,7 @@
 
       if (checkGameOver(newLevel)) {
         stop();
-        resetGame();
+        await resetGame();
         start();
         return;
       }
