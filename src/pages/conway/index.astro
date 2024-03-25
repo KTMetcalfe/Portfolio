@@ -1,0 +1,10 @@
+---
+import ConwayCanvas from "../../components/conway/ConwayCanvas.svelte";
+import NavbarLayout from "../../layouts/NavbarLayout.astro";
+
+export const prerender = true;
+---
+
+<NavbarLayout title="Conway's Game of Life">
+  <ConwayCanvas client:only="svelte" />
+</NavbarLayout>
