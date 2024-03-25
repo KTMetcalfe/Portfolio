@@ -10,7 +10,7 @@
   export let generations_per_second = 20;
   let generations = 0;
 
-  const MAX_GENERATIONS = 50;
+  const MAX_DISPLAYED_GENERATIONS = 100;
 
   const getGridHash = (grid: Grid) => {
     return grid.flat().join("");
@@ -110,12 +110,12 @@
   <T.MeshStandardMaterial color="white" />
 
   {#each tower as grid, y}
-    {#if y > generations - MAX_GENERATIONS}
+    {#if y > generations - MAX_DISPLAYED_GENERATIONS}
       {#each grid as row, z}
         {#each row as cell, x}
           {#if cell}
             <Instance
-              color={`hsl(0, 10%, ${100 - ((generations - y) * 75) / MAX_GENERATIONS}%)`}
+              color={`hsl(0, 10%, ${100 - ((generations - y) * 75) / MAX_DISPLAYED_GENERATIONS}%)`}
               position={[x, y - generations, z]}
             />
           {/if}
